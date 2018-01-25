@@ -1,0 +1,13 @@
+{
+	"id" : "meteoprev",
+	"name" : "Prevision meteo",
+	"description" : "Plugin pour récupérer les prévisions météo sur 5 jours",
+	"licence" : "AGPL",
+	"author" : "Zyg0m4t1k",
+	"require" : "3.0",
+	"category" : "weather",
+	"hasDependency" : false,
+	"hasOwnDeamon" : false,
+	"changelog" : "https://jeedom.github.io/plugin-template/#language#/changelog",
+	"documentation" : "https://jeedom.github.io/plugin-template/#language#/"
+}
