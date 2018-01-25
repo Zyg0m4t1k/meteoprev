@@ -22,13 +22,12 @@ Un clic sur l’icône graph du widget et des  infos apparaissent dans une autre
 Configuration
 =============
 
-> Pour configurer le plugin, aller sur le site https://www.prevision-meteo.ch.\
+> Pour configurer le plugin, aller sur le site https://www.prevision-meteo.ch.
 >\
 > Sélectionner votre ville via la barre de recherche.\
 > Vous arrivez sur une page type \
-> https://www.prevision-meteo.ch/meteo/localite/paris\
+> https://www.prevision-meteo.ch/meteo/localite/paris
 > dans le configuration de l’équipement mettre "paris".\
->\
 
 
 De nombreuses commandes sont disponibles (voir le chapitre json)

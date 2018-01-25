@@ -32,6 +32,8 @@ if (!is_object($eqLogic)) {
 $filename =  $eqLogic->getConfiguration('station');
 
 sendVarToJS('filename',  $filename);
+sendVarToJS('name',  $eqLogic->getName());
+
 ?>
 <div id="container"></div>
 <script>
@@ -48,20 +50,6 @@ $.getJSON('/plugins/meteoprev/data/' + filename + '_days.json', function(json) {
 		pointStart;
 		
     $.each(json, function (j, datas) {
-		
-		
-		
-//		city = datas.city,
-//		country = datas.country;
-//		elevation = datas.elevation;
-//		sunrise = datas.sunrise;
-//		sunset = datas.sunset;
-//		modelname = datas.model;
-//		run = datas.run;
-//		lat = datas.lat;
-//		lon = datas.lon;
-//		varid = datas.varid;
-//		init = datas.init;
 
 		$.each(datas.datas, function(i, value) {	
 			temperatures.push([i*1000,value.TMP2m]);
@@ -98,7 +86,7 @@ $.getJSON('/plugins/meteoprev/data/' + filename + '_days.json', function(json) {
         },
         title: {
             //text: '<strong>Prévisions pour '+city+', '+country+', '+elevation+' mètres</strong>',
-			text: 'test',
+			text: name,
 			useHTML: true,
             align: 'center'
         },
