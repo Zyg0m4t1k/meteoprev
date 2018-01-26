@@ -78,7 +78,10 @@ class meteoprev extends eqLogic {
 					$results = json_decode(file_get_contents($file), true);
 					$datas = json_decode($homepage, true);
 					if($datas === $results) {
-						log::add('meteoprev','debug','datas = json');
+						log::add('meteoprev','debug','datas = json continue');
+						self::updateCommand($eqlogic->getId());
+						continue;
+						
 					} else {
 						log::add('meteoprev','debug','datas!= json');
 						file_put_contents($file, $homepage,true);

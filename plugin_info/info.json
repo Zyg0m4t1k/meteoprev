@@ -8,6 +8,6 @@
 	"category" : "weather",
 	"hasDependency" : false,
 	"hasOwnDeamon" : false,
-	"changelog" : "https://jeedom.github.io/plugin-template/#language#/changelog",
-	"documentation" : "https://jeedom.github.io/plugin-template/#language#/"
+	"changelog" : "https://zyg0m4t1k.github.io/meteoprev/#language#/changelog",
+	"documentation" : "https://zyg0m4t1k.github.io/meteoprev/#language#/"
 }
