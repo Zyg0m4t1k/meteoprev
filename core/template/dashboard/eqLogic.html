@@ -1,5 +1,5 @@
-<div class="eqLogic eqLogic-widget allowResize" data-eqLogic_id="#id#" data-version="#version#" style="border:#border#;border-radius:#border-radius#;background-color: #background-color#;color: #color#;#style#;width: #width#;height: #height#; padding : 5px;" data-eqLogic_uid="#uid#" data-category="#category#">
-   <i class='fa fa-bar-chart pull-right cursor chart' style="margin-top: 10px;margin-right: 10px;"></i>
+<div class="eqLogic eqLogic-widget allowResize" data-eqLogic_id="#id#" data-version="#version#" style="width: #width#;height: #height#;min-height:245px;border:#border#;border-radius:#border-radius#;background-color: #background-color#;color: #color#;#style#; padding : 5px;" data-eqLogic_uid="#uid#" data-category="#category#">
+   #i#
    <center class="widget-name">
 		<a href="#eqLink#" class="reportModeHidden" style="font-size : 1.5em;#hideEqLogicName#">#name#</a>
 	</center>
@@ -71,22 +71,26 @@
 		padding:5px;
 		text-align:center;
 	}
+	
+
 </style>
 <script>
 	var wWidth = $(window).width();
 	var dWidth = wWidth * 0.8;
 	var wHeight = $(window).height();
 	var dHeight = wHeight * 0.8;
-	$('#modal_meteo').dialog({
+	$('#md_modal2').dialog({
 		width: dWidth,
 		height: dHeight,
-		resizable: false,
 		autoOpen: false,
 		modal: true,
 		title: "Graphique"
 	});
-   $('.eqLogic[data-eqLogic_uid=#uid#] .chart').on('click', function () {
-            $('#modal_meteo').load('index.php?v=d&plugin=meteoprev&modal=modal.meteoprev&id=#id#');		
-			$('#modal_meteo').dialog('open');	   
-	});
+	
+function stats_#id#(){
+	$('#md_modal2').dialog({title: "#name#"});
+	$('#md_modal2').load('index.php?v=d&plugin=meteoprev&modal=modal.meteoprev&id=#id#');		
+	$('#md_modal2').dialog('open');
+}
+
 </script>

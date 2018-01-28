@@ -81,12 +81,10 @@ class meteoprev extends eqLogic {
 						log::add('meteoprev','debug','datas = json continue');
 						self::updateCommand($eqlogic->getId());
 						continue;
-						
 					} else {
 						log::add('meteoprev','debug','datas!= json');
 						file_put_contents($file, $homepage,true);
 					}
-		
 				}
 				log::add('meteoprev','debug','Json file : ' . dirname(__FILE__) . '/../../data/' . $eqlogic->getConfiguration('station') .'.json');
 				log::add('meteoprev','debug','End function savedata');
@@ -101,19 +99,33 @@ class meteoprev extends eqLogic {
 						if ($key == 'date') {
 							
 							$date = $value;
-							$_infos[$date] = array();
+							$_infos[$array]['date'] = $date;
 						} elseif (($key != 'hourly_data')) {
-							$_infos[$date][$key] = $value;
+							$_infos[$array][$key] = $value;
 						} else {
 							$infos = $json[$array]['hourly_data'];
+							$_datas = array();
 							foreach ($infos as $keys => $values) {
 								$dtime = DateTime::createFromFormat("d.m.Y G:i", $date . ' '  . str_replace('H', ':', $keys));
 								$timestamp = $dtime->getTimestamp();
+								$_value = array();
 								$info_hour = $json[$array]['hourly_data'][$keys];
 								foreach ($info_hour as $key1 => $value2) {
-									$_infos[$date]['datas'][$timestamp][$key1] = $value2;
-								}												
+									if ($key1 == "WNDSPD10m") {
+										$var = self::windName($value2);
+										$_value['Bf'] = $var[0];
+										$_value['windname'] = $var[1];
+										
+										//array_push($_value,array('Bf' => $var[0],'windname' => $var[1]));
+										
+									}
+									$_value[$key1] = $value2;
+									//array_push($_value,array($key1 => $value2));
+									//$_infos[$date]['datas'][$timestamp][$key1] = $value2;
+								}								
+								array_push($_datas,array('timestamp' => $timestamp,'value' => $_value));
 							}
+							$_infos[$array]['data'] = $_datas;
 						}
 					}
 				}
@@ -122,6 +134,54 @@ class meteoprev extends eqLogic {
 			}
 	}
 	
+	public static function windName($vitesse) {
+		
+		$windnames = array('Calme', 'Très légère brise', 'Légère brise', 'Petite brise', 'Jolie brise',
+				'Bonne brise', 'Vent frais', 'Grand vent frais', 'Coup de vent', 'Fort coup de vent', 'Tempête',
+				'Violente tempête', 'Ouragan');	
+					
+		if ($vitesse < 1) {
+			$Bf = 0;
+			$windname = $windnames[0];
+		} elseif ($vitesse >= 1 && $vitesse <= 5) {
+			$Bf = 1;
+			$windname = $windnames[1];
+		} elseif ($vitesse >= 6 && $vitesse <= 11) {
+			$Bf = 2;
+			$windname = $windnames[2];
+		} elseif ($vitesse >= 12 && $vitesse <= 19) {
+			$Bf = 3;
+			$windname = $windnames[3];
+		} elseif ($vitesse >= 20 && $vitesse <= 28) {
+			$Bf = 4;
+			$windname = $windnames[4];
+		} elseif ($vitesse >= 29 && $vitesse <= 38) {
+			$Bf = 5;
+			$windname = $windnames[5];
+		} elseif ($vitesse >= 39 && $vitesse <= 49) {
+			$Bf = 6;
+			$windname = $windnames[6];
+		} elseif ($vitesse >= 50 && $vitesse <= 61) {
+			$Bf = 7;
+			$windname = $windnames[7];
+		} elseif ($vitesse >= 62 && $vitesse <= 74) {
+			$Bf = 8;
+			$windname = $windnames[8];
+		} elseif ($vitesse >= 75 && $vitesse <= 88) {
+			$Bf = 9;
+			$windname = $windnames[9];
+		} elseif ($vitesse >= 89 && $vitesse <= 102) {
+			$Bf = 10;
+			$windname = $windnames[10];
+		} elseif ($vitesse >= 103 && $vitesse <= 117) {
+			$Bf = 11;
+			$windname = $windnames[11];
+		} elseif ($vitesse > 117 ) {
+			$Bf = 12;
+			$windname = $windnames[12];
+		}
+		return array($Bf,$windname);	
+	}
 	
 	public function updateCommand($_id) {
 		$now = new DateTime();
@@ -318,6 +378,8 @@ class meteoprev extends eqLogic {
 		foreach ($cmds as $cmd) {
 			$replace['#' . $cmd->getLogicalId() . '#'] = $cmd->execCmd();
 		}
+		$i = "<i class='fa fa-bar-chart pull-right cursor chart' style='margin-top: 10px;margin-right: 10px;' onClick='stats_" . $this->getId() . "()'></i>";
+		$replace['#i#'] = $i;
 				
 		return template_replace($replace, getTemplate('core', $version, 'eqLogic', 'meteoprev'));			  
       }

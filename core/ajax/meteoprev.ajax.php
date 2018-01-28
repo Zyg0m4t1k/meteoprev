@@ -25,7 +25,13 @@ try {
     }
     
     ajax::init();
-
+	
+//    if (init('action') == 'getDatas') {
+//		$eqlogic = meteoprev::byId(init('id'));
+//		$file =  dirname(__FILE__) . '/../../data/' . $eqlogic->getConfiguration('station') .'_days.json';
+//		
+//		ajax::success(@file_get_contents($file));
+//    }
 
 
     throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . init('action'));
