@@ -57,7 +57,7 @@ class meteoprev extends eqLogic {
 		foreach ($eqLogics as $eqlogic) {	
 				$homepage = @file_get_contents('https://www.prevision-meteo.ch/services/json/' . $eqlogic->getConfiguration('station'));
 				if($homepage === FALSE) {
-					log::add('meteoprev','error','Impossible de récupérer le fichier : ' . $value);
+					log::add('meteoprev','error','Impossible de récupérer le fichier https://www.prevision-meteo.ch/services/json/' . $eqlogic->getConfiguration('station'));
 					continue;
 				}
 				$path = dirname(__FILE__) . '/../../data';
