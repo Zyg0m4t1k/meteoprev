@@ -120,17 +120,11 @@ class meteoprev extends eqLogic {
 										$var = self::windName($value2);
 										$_value['Bf'] = $var[0];
 										$_value['windname'] = $var[1];
-										
-										//array_push($_value,array('Bf' => $var[0],'windname' => $var[1]));
-										
 									}
 									if ($key1 == "APCPsfc") {
 										$rain = $rain + (float)$value2;
 									}
-									
 									$_value[$key1] = $value2;
-									//array_push($_value,array($key1 => $value2));
-									//$_infos[$date]['datas'][$timestamp][$key1] = $value2;
 								}								
 								array_push($_datas,array('timestamp' => $timestamp,'value' => $_value));
 							}

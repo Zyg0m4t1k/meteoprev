@@ -18,16 +18,23 @@
 
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
-function template_install() {
+function meteoprev_install() {
     
 }
 
-function template_update() {
-	
+function meteoprev_update() {
+	$eqLogics = eqLogic::byType('meteoprev', true);
+	foreach ($eqLogics as $eqlogic) {
+		$file = dirname(__FILE__) . '/../data/' . $eqlogic->getConfiguration('station') .'.json';
+		if (file_exists($file)) {
+			com_shell::execute(system::getCmdSudo() . ' rm ' . $file);
+		}
+		$eqlogic->save();
+	}
 }
 
 
-function template_remove() {
+function meteoprev_remove() {
     
 }
 
