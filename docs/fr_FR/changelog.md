@@ -1,8 +1,8 @@
-**.03.2018
+02.03.2018
+===
 
 - Evolutions
-
-	- Ajout d'une commande qui renvoit du calcul total de la pluie sur une journée
+	- Ajout d'une commande qui renvoit le calcul de la pluie sur une journée.
 	- Ajout d'un widget personnalisé qui permet de donner les valeurs selon une commande existante (Type sonde netatmo)
 	
 	
