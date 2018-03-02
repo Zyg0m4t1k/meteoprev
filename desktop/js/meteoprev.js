@@ -20,6 +20,25 @@ $("#table_cmd").sortable({axis: "y", cursor: "move", items: ".cmd", placeholder:
 /*
  * Fonction pour l'ajout de commande, appellé automatiquement par plugin.template
  */
+ 
+ $(".form-group").delegate(".listCmdInfo", 'click', function () {
+    var el = $('.' + $(this).attr('data-input')).find('input');
+	el.empty();
+    jeedom.cmd.getSelectModal({cmd: {type: 'info'}}, function (result) {
+        el.atCaret('insert', result.human);
+    });
+});
+
+function printEqLogic(_eqLogic) {
+	if (isset(_eqLogic.configuration)) {
+		if (_eqLogic.configuration.widgetCustom == 1) {	
+			$('#custom').show();				
+		} else {
+			$('#custom').hide();
+		}
+	}
+}
+
 function addCmdToTable(_cmd) {
     if (!isset(_cmd)) {
         var _cmd = {configuration: {}};

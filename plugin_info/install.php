@@ -23,7 +23,7 @@ function template_install() {
 }
 
 function template_update() {
-    
+	
 }
 
 

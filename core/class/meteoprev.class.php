@@ -55,9 +55,12 @@ class meteoprev extends eqLogic {
 		}
 
 		foreach ($eqLogics as $eqlogic) {	
+				if($eqlogic->getIsEnable() == 0) {
+					continue;
+				}
 				$homepage = @file_get_contents('https://www.prevision-meteo.ch/services/json/' . $eqlogic->getConfiguration('station'));
 				if($homepage === FALSE) {
-					log::add('meteoprev','error','Impossible de récupérer le fichier https://www.prevision-meteo.ch/services/json/' . $eqlogic->getConfiguration('station'));
+					//log::add('meteoprev','error','Impossible de récupérer le fichier https://www.prevision-meteo.ch/services/json/' . $eqlogic->getConfiguration('station'));
 					continue;
 				}
 				$path = dirname(__FILE__) . '/../../data';
@@ -93,8 +96,10 @@ class meteoprev extends eqLogic {
 				$json = json_decode(file_get_contents($file),true);
 				$arrays =array('fcst_day_0','fcst_day_1','fcst_day_2','fcst_day_3','fcst_day_4');
 				$_infos = array();
+				$i=0;
 				foreach ($arrays as $array) {
 					$datas = $json[$array];
+					$rain = 0;
 					foreach ($datas as $key => $value) {
 						if ($key == 'date') {
 							
@@ -119,6 +124,10 @@ class meteoprev extends eqLogic {
 										//array_push($_value,array('Bf' => $var[0],'windname' => $var[1]));
 										
 									}
+									if ($key1 == "APCPsfc") {
+										$rain = $rain + (float)$value2;
+									}
+									
 									$_value[$key1] = $value2;
 									//array_push($_value,array($key1 => $value2));
 									//$_infos[$date]['datas'][$timestamp][$key1] = $value2;
@@ -128,10 +137,20 @@ class meteoprev extends eqLogic {
 							$_infos[$array]['data'] = $_datas;
 						}
 					}
+					log::add('meteoprev','debug','rain ' . $i . '  ' . $rain);
+					$eqlogic->checkAndUpdateCmd('rain_' .$i, $rain);					
+					$i++;
 				}
 				$file =  dirname(__FILE__) . '/../../data/' . $eqlogic->getConfiguration('station') .'_days.json';
 				file_put_contents($file, json_encode($_infos));	
+				//$eqlogic->refreshWidget();
 			}
+	}
+	
+	static function launchRefresh($_options) {
+		log::add('meteoprev', 'debug', "launchRefresh(" . json_encode($_options) . ")");
+		$meteoprev = eqLogic::byId($_options['id']);
+		$meteoprev->refreshWidget();
 	}
 	
 	public static function windName($vitesse) {
@@ -353,11 +372,57 @@ class meteoprev extends eqLogic {
     }
 
     public function postUpdate() {
-		$this->addCommand();
-		self::cronHourly($this->getId());
+		$listener = listener::byClassAndFunction('meteoprev', 'launchRefresh', array('id' => intval($this->getId())));
+		if($this->getIsEnable() == 1 ) {
+			$this->addCommand();
+			$arrays = array(0,1,2,3,4);
+			foreach ($arrays as $array) {
+				$meteoprevCmd = $this->getCmd(null,  'rain_' .$array);
+				if (!is_object($meteoprevCmd)) {
+					$meteoprevCmd = new meteoprevCmd();
+				}
+				$meteoprevCmd->setName(__( 'rain_' .$array , __FILE__));
+				$meteoprevCmd->setLogicalId('rain_' .$array);
+				$meteoprevCmd->setEqLogic_id($this->getId());
+				$meteoprevCmd->setType('info');	
+				$meteoprevCmd->setSubType('numeric');
+				$meteoprevCmd->setUnite('mm');
+				$meteoprevCmd->save();
+						
+				
+			}
+			if (!is_object($listener)) {
+				$listener = new listener();
+			}
+			$listener->setClass('meteoprev');
+			$listener->setFunction('launchRefresh');
+			$listener->setOption(array('id' => intval($this->getId())));
+			$listener->emptyEvent();
+			$cmds = array("temperature","humidite","pression","vent","pluieInst","pluieTot");
+			foreach ($cmds as $cmd) {
+				if($this->getConfiguration($cmd) != "") {
+					$cmd_id = str_replace('#', '', $this->getConfiguration($cmd));
+					if ($cmd_id) {
+						$listener->addEvent(intval($cmd_id));
+					}					
+				}
+			}
+
+			$listener->save();			
+			self::cronHourly($this->getId());
+						
+		} else {
+			if (is_object($listener)) {
+				$listener->remove();
+			}
+		}
     }
 
     public function preRemove() {
+		$listener = listener::byClassAndFunction('meteoprev', 'launchRefresh', array('id' => intval($this->getId())));
+		if (is_object($listener)) {
+			$listener->remove();
+		}		
         
     }
 
@@ -369,19 +434,70 @@ class meteoprev extends eqLogic {
      * Non obligatoire mais permet de modifier l'affichage du widget si vous en avez besoin*/
 	 
       public function toHtml($_version = 'dashboard') {
-		$replace = $this->preToHtml($_version);
-		if (!is_array($replace)) {
-			return $replace;
-		}
-		$version = jeedom::versionAlias($_version);
-		$cmds = $this->getCmd();
-		foreach ($cmds as $cmd) {
-			$replace['#' . $cmd->getLogicalId() . '#'] = $cmd->execCmd();
-		}
-		$i = "<i class='fa fa-bar-chart pull-right cursor chart' style='margin-top: 10px;margin-right: 10px;' onClick='stats_" . $this->getId() . "()'></i>";
-		$replace['#i#'] = $i;
+		  log::add('meteoprev','debug',' To html' );
+			$replace = $this->preToHtml($_version);
+			if (!is_array($replace)) {
+				return $replace;
+			}
+			$version = jeedom::versionAlias($_version);
+					  
+		  if ($this->getConfiguration("widgetCustom") == 0) {
+			$cmds = $this->getCmd();
+			foreach ($cmds as $cmd) {
+				$replace['#' . $cmd->getLogicalId() . '#'] = $cmd->execCmd();
+			}
+			$i = "<i class='fa fa-bar-chart pull-right cursor chart' style='margin-top: 10px;margin-right: 10px;' onClick='stats_" . $this->getId() . "()'></i>";
+			$replace['#i#'] = $i;
+			
+			return template_replace($replace, getTemplate('core', $version, 'eqLogic', 'meteoprev'));
+		  }
+		 else {
+			 
+			$cmds = $this->getCmd();
+			foreach ($cmds as $cmd) {
+				$replace['#' . $cmd->getLogicalId() . '#'] = $cmd->execCmd();
+			}
+			$i = "<i class='fa fa-bar-chart pull-right cursor chart' style='margin-top: 10px;margin-right: 10px;' onClick='stats_" . $this->getId() . "()'></i>";
+			$replace['#i#'] = $i;			 
+			 
+			 $infos = array ("temperature" => "fcst_day_0_TMP2m","humidite" => "fcst_day_0_RH2m","pression" => "fcst_day_0_PRMSL","vent" => "fcst_day_0_WNDSPD10m","pluieInst" => "fcst_day_0_APCPsfc","pluieTot" => "rain_0");
+			 
+			 foreach ($infos as $key => $value) {
+				log::add('meteoprev','debug','key ' . $key . ' value ' .$value );
+				if($this->getConfiguration($key) != "") {
+					log::add('meteoprev','debug','custom ');
+					$cmdId = str_replace('#', '', $this->getConfiguration($key));
+					$cmd = cmd::byId($cmdId);
+					if (is_object($cmd)) {
+						log::add('meteoprev','debug','cmd ' . $value);
+						if($key == "vent") {
+							 log::add('meteoprev','debug','vent ' . $cmd->execCmd());
+							 
+							 $return = meteoprev::windName($cmd->execCmd());
+							 $replace['#nameWind#'] = $return[1];
+							
+						}
+						$replace['#' . $value . '#'] = $cmd->execCmd();
+					}			
+				} else {
+					log::add('meteoprev','debug','no custom ');
+					$meteoprevCmd = $this->getCmd(null,  $value);
+					if (is_object($meteoprevCmd)) {
+						if($key == "vent") {
+							 log::add('meteoprev','debug','vent ' . $meteoprevCmd->execCmd());
+							 
+							 $return = meteoprev::windName($meteoprevCmd->execCmd());
+							 $replace['#nameWind#'] = $return[1];
+							
+						}						
+						$replace['#' . $value . '#'] = $meteoprevCmd->execCmd();
+					}
+				}
+			 }
+			 
+			return template_replace($replace, getTemplate('core', $version, 'custom', 'meteoprev'));
 				
-		return template_replace($replace, getTemplate('core', $version, 'eqLogic', 'meteoprev'));			  
+		 }
       }
      
 
@@ -411,14 +527,15 @@ class meteoprevCmd extends cmd {
 
     /*
      * Non obligatoire permet de demander de ne pas supprimer les commandes même si elles ne sont pas dans la nouvelle configuration de l'équipement envoyé en JS
-      public function dontRemoveCmd() {
-      return true;
-      }
-     */
 
-    public function execute($_options = array()) {
-        
-    }
+     */
+	public function dontRemoveCmd() {
+		return true;
+	}
+	
+	public function execute($_options = array()) {
+	  
+	}
 
     /*     * **********************Getteur Setteur*************************** */
 }

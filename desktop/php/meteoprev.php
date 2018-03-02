@@ -106,12 +106,119 @@ foreach (object::all() as $object) {
 			<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isVisible" checked/>{{Visible}}</label>
 		</div>
 	</div>
-       <div class="form-group">
+    <div class="form-group">
         <label class="col-sm-3 control-label">{{Nom de la station}}</label>
         <div class="col-sm-3">
             <input type="text" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="station" placeholder="{{Nom}}"/>
         </div>
     </div>
+    <div class="form-group">
+        <label class="col-md-3 control-label" >{{Widget personnalisé}}</label>
+        <div class="col-md-1" >
+            </span><input type="checkbox" class="eqLogicAttr checkbox-inline" data-l1key="configuration"  data-l2key="widgetCustom"  />
+        </div>
+        <label class="control-label" >{{Valider si vous souhaitez avoir un widget personnalisé}}</label>
+    </div>    
+    
+   <div id="custom" style="display:none;">
+        <div class="form-group col-sm-12">
+		<label class="col-sm-3 control-label"></label>
+        <legend>{{Choisir les commandes pour qu'elles apparaissent sur le widget}}</legend>
+        </div>
+<!--        <div class="col-sm-3 ">
+        <label class="col-sm-6 control-label">Si une commande n'est pas remplie elle prendra la valeur du plugin par défaut</label>
+        </div>
+        
+        </div>-->
+    
+    <div class="form-group temperature">
+    	<label class="col-sm-3 control-label">Température Extérieure</label>
+   		<div class="col-sm-3 ">
+    		<div class="input-group">
+   			<input class="eqLogicAttr form-control input-sm cmdAction" data-l1key="configuration"  data-l2key="temperature" />
+    		<span class="input-group-btn">
+    		<a class="btn  btn-sm listCmdInfo" data-input="temperature"><i class="fa fa-list-alt"></i></a>
+   			</span>
+    		</div>
+    	</div>
+        <div class="col-sm-5">
+        	<span>Si vide la valeur sera celle par défaut</span>
+        </div>
+     </div> 
+     
+    <div class="form-group humidite">
+    	<label class="col-sm-3 control-label">Humidité Extérieure</label>
+   		<div class="col-sm-3 ">
+    		<div class="input-group">
+   			<input class="eqLogicAttr form-control input-sm cmdAction" data-l1key="configuration"  data-l2key="humidite" />
+    		<span class="input-group-btn">
+    		<a class="btn  btn-sm listCmdInfo" data-input="humidite"><i class="fa fa-list-alt"></i></a>
+   			</span>
+    		</div>
+    	</div>
+        <div class="col-sm-5">
+        	<span>Si vide la valeur sera celle par défaut</span>
+        </div>        
+     </div> 
+    <div class="form-group pression">
+    	<label class="col-sm-3 control-label">Pression</label>
+   		<div class="col-sm-3 ">
+    		<div class="input-group">
+   			<input class="eqLogicAttr form-control input-sm cmdAction" data-l1key="configuration"  data-l2key="pression" />
+    		<span class="input-group-btn">
+    		<a class="btn  btn-sm listCmdInfo" data-input="pression"><i class="fa fa-list-alt"></i></a>
+   			</span>
+    		</div>
+    	</div>
+        <div class="col-sm-5">
+        	<span>Si vide la valeur sera celle par défaut</span>
+        </div>        
+     </div>  
+    <div class="form-group vent">
+    	<label class="col-sm-3 control-label">Vent</label>
+   		<div class="col-sm-3 ">
+    		<div class="input-group">
+   			<input class="eqLogicAttr form-control input-sm cmdAction" data-l1key="configuration"  data-l2key="vent" />
+    		<span class="input-group-btn">
+    		<a class="btn  btn-sm listCmdInfo" data-input="vent"><i class="fa fa-list-alt"></i></a>
+   			</span>
+    		</div>
+    	</div>
+        <div class="col-sm-5">
+        	<span>Si vide la valeur sera celle par défaut</span>
+        </div>        
+     </div> 
+    <div class="form-group pluieInst">
+    	<label class="col-sm-3 control-label">Pluie Instantanée</label>
+   		<div class="col-sm-3 ">
+    		<div class="input-group">
+   			<input class="eqLogicAttr form-control input-sm cmdAction" data-l1key="configuration"  data-l2key="pluieInst" />
+    		<span class="input-group-btn">
+    		<a class="btn  btn-sm listCmdInfo" data-input="pluieInst"><i class="fa fa-list-alt"></i></a>
+   			</span>
+    		</div>
+    	</div>
+        <div class="col-sm-5">
+        	<span>Si vide la valeur sera celle par défaut</span>
+        </div>        
+     </div> 
+    <div class="form-group pluieTot">
+    	<label class="col-sm-3 control-label">Pluie Totale</label>
+   		<div class="col-sm-3 ">
+    		<div class="input-group">
+   			<input class="eqLogicAttr form-control input-sm cmdAction" data-l1key="configuration"  data-l2key="pluieTot" />
+    		<span class="input-group-btn">
+    		<a class="btn  btn-sm listCmdInfo" data-input="pluieTot"><i class="fa fa-list-alt"></i></a>
+   			</span>
+    		</div>
+    	</div>
+        <div class="col-sm-5">
+        	<span>Si vide la valeur sera celle par défaut</span>
+        </div>        
+     </div> 
+          
+    </div>
+    
 </fieldset>
 </form>
 </div>
