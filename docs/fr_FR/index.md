@@ -24,6 +24,11 @@ Configuration
 De nombreuses commandes sont disponibles (voir Liste des paramètres retournés par le flux JSON)
 [ici](https://www.prevision-meteo.ch/uploads/pdf/recuperation-donnees-meteo.pdf)
 
+**Autres commandes**
+
+rain_0 rain_1 rain_2 rain_3 rain_4 : Cumul de la pluie sur la journée (en mm) 
+ 
+ 
 Les widgets
 =========
 
@@ -42,3 +47,16 @@ Un clic sur l’icône graph du widget et des  infos apparaissent dans une autre
 
 Le Widget personnalisable
 ---
+
+Dans la configuration de l'équipement , cocher Widget personnalisé et enregistrer.
+
+![meteoprev4](../images/meteoprev4.png)
+
+Ensuite vous pouvez définir les commandes que vous souhaitez voir sur le widget
+
+
+
+
+
+
+
