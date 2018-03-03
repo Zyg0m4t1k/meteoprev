@@ -37,6 +37,5 @@ sendVarToJS('name',  $eqLogic->getName());
 
 ?>
 <div id="container"></div>
-<script src="https://code.highcharts.com/modules/windbarb.js"></script>
 <?php include_file('desktop', 'modal', 'js', 'meteoprev');?>
 
