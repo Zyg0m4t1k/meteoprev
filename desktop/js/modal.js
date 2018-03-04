@@ -4,8 +4,8 @@ var hour = new Date().getHours() + '' +   new Date().getDay() ,
  	wHeight = $(window).height(),
 	dHeight = wHeight * 0.7;
 
+
 $.getJSON('/plugins/meteoprev/data/' + filename + '_days.json', function(json) {
-	console.log(json);
 	window.meteogram = new Meteogram(json, 'container');
 });
 
@@ -26,6 +26,7 @@ function Meteogram(json, container) {
 	this.windSpeedNames = [];
 	this.conditions = [];
 	this.time_stamp = "";
+	this.resoluton = 4 ;
 	
 
 
@@ -41,9 +42,8 @@ Meteogram.prototype.parseYrData = function () {
 
     var meteogram = this,
         json = this.json,
-        pointStart,
-		resolution;
-	var k=0;
+        pointStart;
+		
     $.each(json, function (j, datas) {
 		
 		$.each(datas.data, function(i, value) {	
@@ -54,27 +54,26 @@ Meteogram.prototype.parseYrData = function () {
 			var from, to;
 			
 			from = value.timestamp*1000;
-			to = value.timestamp*1000 + 4 * 36e5;
+			to = value.timestamp*1000 +  4 * 36e5;
 			
-//			if (to > pointStart + 4 * 24 * 36e5) {
-//				return;
-//			}
-            if (k === 0) {
-                var resolution = to - from;
+			if (to > pointStart + 4 * 24 * 36e5) {
+				return;
+			}
+            if (i === 0) {
+                meteogram.resolution = to - from;
             }					
 				
 			 meteogram.temperatures.push({
 				//x: value.timestamp*1000,
 				x: from,
 				y: value.value.TMP2m,
-				to: to,
-				symbolName: value.value.CONDITION
+				condition: value.value.CONDITION,
+				symbolName: value.value.windname + '  ( ' + value.value.WNDDIRCARD10 + ' )'
 			})
 			
 			 meteogram.precipitations.push({
 				x: from,
-				y: value.value.APCPsfc,
-				symbolName: value.value.windname + '  ( ' + value.value.WNDDIRCARD10 + ' )'
+				y: value.value.APCPsfc
 			})
 			
 			 meteogram.pressures.push({
@@ -88,13 +87,11 @@ Meteogram.prototype.parseYrData = function () {
 			})	
 			
 			// meteogram.winds.push([value.timestamp*1000,[value.value.WNDSPD10m,value.value.WNDDIR10m]]);
-           // if (i % 2 === 0) {
                 meteogram.winds.push({
                     x: from,
                     value: parseFloat(value.value.WNDSPD10m),
                     direction: parseFloat(value.value.WNDDIR10m)
                 });
-           // }
 
 			 meteogram.icon.push(value.value.ICON);
 			 meteogram.windDirections.push(value.value.WNDDIR10m);
@@ -102,11 +99,11 @@ Meteogram.prototype.parseYrData = function () {
 			 meteogram.windSpeeds.push(value.value.WNDSPD10m);
 			 meteogram.windSpeedNames.push(value.value.windname);
 			 meteogram.conditions.push(value.value.CONDITION);
-			if (k == 0) {
+			if (i == 0) {
 				pointStart = (from + to) / 2;
 			}	
 		
-			k++;
+
 		})
     });
 
@@ -144,6 +141,7 @@ Meteogram.prototype.createChart = function () {
     });
 };
 
+
 Meteogram.prototype.getChartOptions = function () {
     var meteogram = this;
 
@@ -151,73 +149,65 @@ Meteogram.prototype.getChartOptions = function () {
         chart: {
             renderTo: this.container,
             marginBottom: 70,
-            marginRight: 40,
-            marginTop: 50,
+            marginRight: 130,
+            marginTop: 80,
             plotBorderWidth: 1,
-            height: dHeight,
-            alignTicks: false
+            height: 500
         },
-
         title: {
             text: name,
+			useHTML: true,
             align: 'left'
         },
-
+		subtitle: {
+            text: 'Lat: '+this.lat+', lon: '+this.lon,
+            align: 'left',
+			floating: true,
+			y: 40
+        },
         credits: {
-           text: '<a href="https://www.prevision-meteo.ch">prevision-meteo.ch</a>',
+            text: '<a href="https://www.prevision-meteo.ch">prevision-meteo.ch</a>',
+			align: 'right',
             position: {
-                x: -40
+                x: -10
             }
         },
-
         tooltip: {
             shared: true,
             useHTML: true,
             formatter: function () {
-                return tooltipFormatter(this);
+                return meteogram.tooltipFormatter(this);
             }
-
         },
-
         xAxis: [{ // Bottom X axis
             type: 'datetime',
             tickInterval: 4 * 36e5, // two hours
             minorTickInterval: 2 * 36e5, // one hour
-            gridLineWidth: 0,
-           // gridLineColor: (Highcharts.theme && Highcharts.theme.background2) || '#F0F0F0',
-		   lineWidth: 0,
-		   minorGridLineWidth: 0,
-		   lineColor: 'transparent',
-		   minorTickLength: 0,
-		   tickLength: 0,		   
-		   
+            tickLength: 0,
+            gridLineWidth: 1,
+            gridLineColor: (Highcharts.theme && Highcharts.theme.background2) || '#F0F0F0',
+            startOnTick: false,
+            endOnTick: false,
             minPadding: 0,
             maxPadding: 0,
             offset: 30,
             showLastLabel: true,
             labels: {
-                format: '{value:%H}'
-            },
-			plotLines: [{
-				color: 'blue',
-				width: 2,
-				value: this.time_stamp
-			}],			
-			
-            crosshair: true
+                format: '{value:%Hh}'
+            }
         }, { // Top X axis
             linkedTo: 0,
             type: 'datetime',
             tickInterval: 24 * 3600 * 1000,
             labels: {
-                format: '{value:<span style="font-size: 12px; font-weight: bold">%a</span> %b %e}',
+                format: '{value:<span style="font-size: 12px; font-weight: bold">%a</span> %e %b}',
                 align: 'left',
                 x: 3,
                 y: -5
             },
             opposite: true,
-            tickLength: 0,
-            gridLineWidth: 0
+            tickLength: 20,
+            gridLineWidth: 1
         }],
 
         yAxis: [{ // temperature axis
@@ -225,7 +215,7 @@ Meteogram.prototype.getChartOptions = function () {
                 text: null
             },
             labels: {
-                format: '{value}°',
+                format: '{value} °C',
                 style: {
                     fontSize: '10px'
                 },
@@ -237,24 +227,29 @@ Meteogram.prototype.getChartOptions = function () {
                 width: 1,
                 zIndex: 2
             }],
+            // Custom positioner to provide even temperature ticks from top down
+            tickPositioner: function () {
+                var max = Math.ceil(this.max) + 1,
+                    pos = max - 12, // start
+                    ret;
+
+                if (pos < this.min) {
+                    ret = [];
+                    while (pos <= max) {
+                        ret.push(pos += 1);
+                    }
+                } // else return undefined and go auto
+
+                return ret;
+
+            },
             maxPadding: 0.3,
-            minRange: 8,
             tickInterval: 1,
-            //gridLineColor: (Highcharts.theme && Highcharts.theme.background2) || '#F0F0F0'
+            gridLineColor: (Highcharts.theme && Highcharts.theme.background2) || '#F0F0F0'
 
-        }, { // precipitation axis
-            title: {
-                text: null
-            },
-            labels: {
-                enabled: false
-            },
-            gridLineWidth: 0,
-            tickLength: 0,
-            minRange: 10,
-            min: 0
+        },
 
-        }, { // Air pressure
+		{ // hpa axis
             title: {
                 text: null,
             },
@@ -262,9 +257,24 @@ Meteogram.prototype.getChartOptions = function () {
 				format: '{value} hPa',
                 enabled: true,
             },
-            //gridLineWidth: 0,
+            gridLineWidth: 0,
             tickLength: 0,
             opposite: true
+
+        },
+		{ // precipitation axis
+            title: {
+                text: null,
+            },
+            labels: {
+				format: '{value} mm',
+                enabled: true,
+            },
+            gridLineWidth: 0,
+            tickLength: 0,
+            opposite: true,
+            min:0
+
         }],
 
         legend: {
@@ -274,11 +284,16 @@ Meteogram.prototype.getChartOptions = function () {
         plotOptions: {
             series: {
                 pointPlacement: 'between'
+            },
+			column: {
+                grouping: false,
+                shadow: false,
+                borderWidth: 0
             }
         },
 
 
-        series: [{
+     series: [{
             name: 'Temperature',
             data: this.temperatures,
             type: 'spline',
@@ -296,34 +311,10 @@ Meteogram.prototype.getChartOptions = function () {
             zIndex: 1,
             color: '#FF3333',
             negativeColor: '#48AFE8'
-        }, {
-            name: 'Précipitations',
-            data: this.precipitations,
-			pointPadding: 0,
-            pointPlacement: -0.1,
-            type: 'column',
-            color: 'rgba(104,207,232,1)',
-            yAxis: 2,
-            groupPadding: 0,
-            borderWidth: 0,
-            shadow: false,
-            dataLabels: {
-                enabled: true,
-                formatter: function () {
-                    if (this.y > 0) {
-                        return this.y;
-                    }
-                },
-                style: {
-                    fontSize: '6px'
-                }
-            },
-            tooltip: {
-                valueSuffix: ' mm'
-            }
         },{
             name: 'T. ressentie au vent',
             data: this.dtemperatures,
+            type: 'spline',
             marker: {
                 enabled: false,
                 states: {
@@ -340,7 +331,8 @@ Meteogram.prototype.getChartOptions = function () {
             dashStyle: 'Dash',
             color: '#FF3333',
             negativeColor: '#48AFE8'
-        },{
+        },
+		{
             name: 'Pression (QFF)',
             data: this.pressures,
             type: 'spline',
@@ -365,28 +357,127 @@ Meteogram.prototype.getChartOptions = function () {
 					[1, '#dcdcdc']
 				]
 			}
-        }, {
-            name: 'Vent',
-            type: 'windbarb',
-            id: 'windbarbs',
-            color: Highcharts.getOptions().colors[1],
-            lineWidth: 1.5,
-            data: this.winds,
-            vectorLength: 18,
-            yOffset: -15,
+        },
+		{
+            name: 'Précipitations',
+            data: this.precipitations,
+			pointPadding: 0,
+            pointPlacement: -0.1,
+            type: 'column',
+            color: 'rgba(104,207,232,1)',
+            yAxis: 2,
+            groupPadding: 0,
+            borderWidth: 0,
+            shadow: false,
+            dataLabels: {
+                enabled: true,
+                formatter: function () {
+                    if (this.y > 0) {
+                        return this.y;
+                    }
+                },
+                style: {
+                    fontSize: '8px'
+                }
+            },
             tooltip: {
-                valueSuffix: ' km/h'
+                valueSuffix: ' mm'
             }
-        }
-		]
-    };
+        }]
+    }
 };
 
 Meteogram.prototype.onChartLoad = function (chart) {
 
    this.drawWeatherSymbols(chart);
+   this.drawWindArrows(chart);
   // this.drawBlocksForWindArrows(chart);
 
+};
+
+Meteogram.prototype.windArrow = function (name) {
+    var level,
+        path;
+
+    // The stem and the arrow head
+    path = [
+        'M', 0, 7, // base of arrow
+        'L', -1.5, 7,
+        0, 10,
+        1.5, 7,
+        0, 7,
+        0, -10 // top
+    ];
+
+    //level = $.inArray(name, [0,1,2,3,4,5,6,7,8,9,10,11,12]);
+	level = $.inArray(name, ['Calme', 'Très légère brise', 'Légère brise', 'Petite brise', 'Jolie brise',
+        'Bonne brise', 'Vent frais', 'Grand frais', 'Coup de vent', 'Fort coup de vent', 'Tempête',
+        'Violente tempête', 'Ouragan']);
+
+    if (level === 0) {
+        path = [];
+    }
+
+    if (level === 2) {
+        path.push('M', 0, -8, 'L', 4, -8); // short line
+    } else if (level >= 3) {
+        path.push(0, -10, 7, -10); // long line
+    }
+
+    if (level === 4) {
+        path.push('M', 0, -7, 'L', 4, -7);
+    } else if (level >= 5) {
+        path.push('M', 0, -7, 'L', 7, -7);
+    }
+
+    if (level === 5) {
+        path.push('M', 0, -4, 'L', 4, -4);
+    } else if (level >= 6) {
+        path.push('M', 0, -4, 'L', 7, -4);
+    }
+
+    if (level === 7) {
+        path.push('M', 0, -1, 'L', 4, -1);
+    } else if (level >= 8) {
+        path.push('M', 0, -1, 'L', 7, -1);
+    }
+
+    return path;
+};
+
+Meteogram.prototype.drawWindArrows = function (chart) {
+    var meteogram = this;
+
+    $.each(chart.series[0].data, function (i, point) {
+        var sprite, arrow, x, y;
+
+        if (meteogram.resolution > 36e5 || i % 3 === 0) {
+
+            // Draw the wind arrows
+            x = point.plotX + chart.plotLeft + 8/(meteogram.resolution/36e5);
+            y = 445;
+            if (meteogram.windSpeedNames[i] === '0') {
+                arrow = chart.renderer.circle(x, y, 10).attr({
+                    fill: 'none'
+                });
+            } else {
+                arrow = chart.renderer.path(
+                    meteogram.windArrow(meteogram.windSpeedNames[i])
+                ).attr({
+                    rotation: parseInt(meteogram.windDirections[i], 10),
+                    translateX: x, // rotation center
+                    translateY: y // rotation center
+                });
+            }
+            arrow.attr({
+                stroke: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black',
+                'stroke-width': 1.5,
+                zIndex: 5
+            })
+            .add();
+
+        }
+    });
 };
 
 Meteogram.prototype.drawBlocksForWindArrows = function (chart) {
@@ -430,7 +521,7 @@ Meteogram.prototype.drawWeatherSymbols = function (chart) {
     var meteogram = this;
 
     $.each(chart.series[0].data, function (i, point) {
-        if (meteogram.resolution > 36e5 || i % 2 === 0) {
+        if (i % 2 === 0) {
 
             chart.renderer
                 .image(
@@ -463,27 +554,35 @@ if(typeof Highcharts !== 'undefined'){
 	});
 }	
 
-	function tooltipFormatter (tooltip) {
-		console.log(tooltip);
-		//var index = tooltip.points[0].point.symbolName,
-		var ret = '<small>' + Highcharts.dateFormat('%A %e %b %H:%M', tooltip.x) + '</small><br>';
-//		// Symbol text
-		ret += '<b>' +tooltip.points[0].point.symbolName + '</b>';
-		ret += '<table>';
-		
-		// Add all series
-		Highcharts.each(tooltip.points, function (point) {
-			var series = point.series;
-			ret += '<tr><td><span style="color:' + series.color + '">\u25CF</span> ' + series.name +
-				': </td><td style="white-space:nowrap">' + Highcharts.pick(point.point.value, point.y) +
-				series.options.tooltip.valueSuffix + '</td></tr>';
-		});
-		ret += '<tr><td style="text-align:right"><b>' +tooltip.points[1].point.symbolName + '</b></td></tr>';
-		ret += '</table>';
-		//ret += '<b>' +tooltip.points[1].point.symbolName + '</b>';
-		
-			
-		return ret;	
-	}
+Meteogram.prototype.tooltipFormatter = function (tooltip) {
+
+    // Create the header with reference to the time interval
+    var index = tooltip.points[0].point.index,
+	    x = this.x,
+        ret = '<small>' + Highcharts.dateFormat('%A %e %b %H:%M', tooltip.x) + ' </small><br>';
+		ret += '<b>' + this.conditions[index] + ' </b><br>';
+    // Symbol text
+    ret += '<table>';
+	
+	
+    // Add all series
+    Highcharts.each(tooltip.points, function (point) {
+        var series = point.series;
+        ret += '<tr><td><span style="color:' + series.color + '">\u25CF</span> ' + series.name +
+            ': </td><td style="white-space:nowrap">' + Highcharts.pick(point.point.value, point.y) +
+            series.options.tooltip.valueSuffix + '</td></tr>';
+    });
+
+    // Add wind
+    ret += '<tr><td style="vertical-align: top">\u25CF Vent</td><td style="white-space:nowrap">' + this.windDirectionNames[index] +
+        '<br>' + this.windSpeedNames[index] + ' (' +
+        Highcharts.numberFormat(this.windSpeeds[index], 1) + ' km/h)</td></tr>';
+
+    // Close
+    ret += '</table>';
+
+
+    return ret;
+};
 	
 	
