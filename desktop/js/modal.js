@@ -157,13 +157,7 @@ Meteogram.prototype.getChartOptions = function () {
         title: {
             text: name,
 			useHTML: true,
-            align: 'left'
-        },
-		subtitle: {
-            text: 'Lat: '+this.lat+', lon: '+this.lon,
-            align: 'left',
-			floating: true,
-			y: 40
+            align: 'center'
         },
         credits: {
             text: '<a href="https://www.prevision-meteo.ch">prevision-meteo.ch</a>',
