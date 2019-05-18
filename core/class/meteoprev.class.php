@@ -89,8 +89,8 @@ class meteoprev extends eqLogic {
 						file_put_contents($file, $homepage,true);
 					}
 				}
-				log::add('meteoprev','debug','Json file : ' . dirname(__FILE__) . '/../../data/' . $eqlogic->getConfiguration('station') .'.json');
-				log::add('meteoprev','debug','End function savedata');
+				//log::add('meteoprev','debug','Json file : ' . dirname(__FILE__) . '/../../data/' . $eqlogic->getConfiguration('station') .'.json');
+				//log::add('meteoprev','debug','End function savedata');
 				self::updateCommand($eqlogic->getId());
 				
 				$json = json_decode(file_get_contents($file),true);
@@ -111,7 +111,10 @@ class meteoprev extends eqLogic {
 							$infos = $json[$array]['hourly_data'];
 							$_datas = array();
 							foreach ($infos as $keys => $values) {
+								log::add('meteoprev','debug','date : ' . $date . ' keys ' . str_replace('H', ':', $keys));
+								
 								$dtime = DateTime::createFromFormat("d.m.Y G:i", $date . ' '  . str_replace('H', ':', $keys));
+								log::add('meteoprev','debug','timestatmp : ' . $dtime->getTimestamp());
 								$timestamp = $dtime->getTimestamp();
 								$_value = array();
 								$info_hour = $json[$array]['hourly_data'][$keys];
@@ -440,7 +443,7 @@ class meteoprev extends eqLogic {
 			foreach ($cmds as $cmd) {
 				$replace['#' . $cmd->getLogicalId() . '#'] = $cmd->execCmd();
 			}
-			$i = "<i class='fa fa-bar-chart pull-right cursor chart' style='margin-top: 10px;margin-right: 10px;' onClick='stats_" . $this->getId() . "()'></i>";
+			$i = "<i class='fas fa-bar-chart pull-right cursor chart' style='margin-top: 10px;margin-right: 10px;' onClick='stats_" . $this->getId() . "()'></i>";
 			$replace['#i#'] = $i;
 			
 			return template_replace($replace, getTemplate('core', $version, 'eqLogic', 'meteoprev'));
@@ -451,7 +454,7 @@ class meteoprev extends eqLogic {
 			foreach ($cmds as $cmd) {
 				$replace['#' . $cmd->getLogicalId() . '#'] = $cmd->execCmd();
 			}
-			$i = "<i class='fa fa-bar-chart pull-right cursor chart' style='margin-top: 10px;margin-right: 10px;' onClick='stats_" . $this->getId() . "()'></i>";
+			$i = "<i class='fas fa-chart-bar pull-right cursor chart' style='margin-top: 5px;' onClick='stats_" . $this->getId() . "()'></i>";
 			$replace['#i#'] = $i;			 
 			 
 			 $infos = array ("temperature" => "fcst_day_0_TMP2m","humidite" => "fcst_day_0_RH2m","pression" => "fcst_day_0_PRMSL","vent" => "fcst_day_0_WNDSPD10m","pluieInst" => "fcst_day_0_APCPsfc","pluieTot" => "rain_0");
