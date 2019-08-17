@@ -4,7 +4,7 @@
 	"description" : "Plugin pour récupérer les prévisions météo sur 5 jours",
 	"licence" : "AGPL",
 	"author" : "Zyg0m4t1k",
-	"require" : "4.0",
+	"require" : "3.3.24",
 	"category" : "weather",
 	"hasDependency" : false,
 	"hasOwnDeamon" : false,
