@@ -16,9 +16,6 @@
 * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
 */
 
-if (!isConnect('admin')) {
-    throw new Exception('{{401 - Accès non autorisé}}');
-}
 
 if (init('id') == '') {
     throw new Exception('{{L\'id de l\'opération ne peut etre vide : }}' . init('op_id'));

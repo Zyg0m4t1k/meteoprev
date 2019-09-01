@@ -1,3 +1,16 @@
+01.09.2019
+===
+
+- Fix modal
+
+XX-08-2019
+===
+
+- Bugfix
+- Fix widgets
+- Fix php 7.3
+- change fa to fas
+
 02.03.2018
 ===
 
