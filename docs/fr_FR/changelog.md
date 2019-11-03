@@ -1,3 +1,12 @@
+03.11.2019
+===
+
+- Changement pour la v4 de jeedom seulement
+- Mise à jour widget
+- Suppression de la température ressentie sur les équipements personnalisés. Sinon  Lorsque la température est égale ou inférieure à 10 °C le windchill est indiqué. Lorsque les températures dépassent 20 °C l'humidex est indiqué
+
+
+
 01.09.2019
 ===
 

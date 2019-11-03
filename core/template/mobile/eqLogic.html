@@ -1,63 +1,62 @@
 <div class="eqLogic eqLogic-widget allowResize" data-eqLogic_id="#id#" data-version="#version#" style="width: #width#;height: #height#; min-width:510px;padding : 5px;#style#" data-eqLogic_uid="#uid#" data-category="#category#">
-   <center class="widget-name">
-		<a href="#eqLink#" class="reportModeHidden" style="font-size : 1.5em;#hideEqLogicName#">#name#</a>
-	</center>
-
+	<center>
+		<span class="widget-name">
+			<span style="#hideEqLogicName#">#name_display# <span class="object_name">#object_name#</span></span><br/>
+		</span>
+	</center> 
  	<center>
-            <div style="float:left;width:50%">
-            	<div style="float:left;width:60%;padding-left:30px;">
-                    <div class="meteo-content">
-                        <img src="https://www.prevision-meteo.ch/style/images/icon/#fcst_day_0_CONDITION_KEY#-big.png" /> 
-                    </div>
-                    <div class="meteo-content" style="padding-left:10px;"> 
-                    	<div class="meteo-content" style="text-align:left;margin-bottom:5px;">
-                        <span><i class="fas fa-thermometer-three-quarters"></i> ressentie #fcst_day_0_WNDCHILL2m# °C</span><br />
-                        </div>
-                        <div class="meteo-content" style="text-align:left;">
-                        <span><i class="fas fa-tint"></i> #fcst_day_0_RH2m#</span> % <br />    
-                        </div>           
-                    </div>
-                </div>
-                
-                <div style="float:left;width:40%">
-                    <div class="meteo-content" style="text-align:center;margin-bottom:5px;"><br /><span style="margin-left:15px;font-size:2em;font-weight:bold;">#fcst_day_0_TMP2m#°</span><br /></div>
-                    <div class="meteo-content " style="text-align:center;margin-bottom:5px;margin-left:15px;"><span style="font-size:1em;font-weight:bold;">#fcst_day_0_CONDITION#</span><br /></div>
-                    <div class="meteo-content " style="text-align:center;font-size:1.5em"><span style="font-weight:bold;">#fcst_day_0_tmin#</span> | <span style="font-weight:bold;">#fcst_day_0_tmax#</span></div>
+		<div style="float:left;width:50%">
+			<div style="float:left;width:60%;padding-left:30px;">
+				<div class="meteo-content">
+					<img src="https://www.prevision-meteo.ch/style/images/icon/#fcst_day_0_CONDITION_KEY#-big.png" /> 
+				</div>
+				<div class="meteo-content" style="padding-left:10px;"> 
+					<div class="meteo-content" style="text-align:left;">
+					<span><i class="fas fa-tint"></i> #fcst_day_0_RH2m#</span> % <br />    
+					</div>
+					#condition#					
+				</div>
+			</div>
 
-                    <div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:10px;"><br /><span><i class="fas fa-tachometer-alt"></i> #fcst_day_0_PRMSL# Hpa</span><br /></div>
-                    <div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:5px;"><span><i class="fas fa-flag"></i> #fcst_day_0_WNDSPD10m# km/h</span><br /></div>
-                    <div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:10px;"><span><i class="icon meteo-orage"></i> #fcst_day_0_KINDEX# %</span><br /></div>
-                </div>                
-            </div>
-            <div style="float:left;width:50%;">
-            	<div class="meteo-content">
-                	<br />
-                    <table style="background-color: transparent !important">
-                    <tr>
-                           <th>#fcst_day_1_day_long#</th>
-                           <th>#fcst_day_2_day_long#</th>
-                           <th>#fcst_day_3_day_long#</th>
-                           <th>#fcst_day_4_day_long#</th>
-                       </tr>
-                       <tr>
-                           <td><img src="#fcst_day_1_icon#" width="45" height="45"  />  </td>
-                           <td><img src="#fcst_day_2_icon#" width="45" height="45"  />  </td>
-                           <td><img src="#fcst_day_3_icon#" width="45" height="45"  />  </td>
-                           <td><img src="#fcst_day_4_icon#" width="45" height="45"  />  </td>
-                       </tr>
-                       <tr>
-                           <td>#fcst_day_1_tmin# | #fcst_day_1_tmax#</td>
-                           <td>#fcst_day_2_tmin# | #fcst_day_2_tmax#</td>
-                           <td>#fcst_day_3_tmin# | #fcst_day_3_tmax#</td>
-                           <td>#fcst_day_4_tmin# | #fcst_day_4_tmax#</td>
-                       </tr>
-                    </table>                
-                </div>
-                <div style="text-align:center;margin-top:5px;">
-                	<div class="meteo-content " style="text-align:center;margin-bottom:10px;"><span >Isotherme : #fcst_day_0_HGT0C#  m</span></div>
-                    <div class="meteo-content " style="text-align:center;"><span> Point de rosée : #fcst_day_0_DPT2m# °C</span></div>
-                </div>
-            </div>
+			<div style="float:left;width:40%">
+				<div class="meteo-content" style="text-align:center;margin-bottom:5px;"><br /><span style="margin-left:15px;font-size:2em;font-weight:bold;">#current_condition_tmp#°</span><br /></div>
+				<div class="meteo-content " style="text-align:center;margin-bottom:5px;margin-left:15px;"><span style="font-size:1em;font-weight:bold;">#fcst_day_0_CONDITION#</span><br /></div>
+				<div class="meteo-content " style="text-align:center;font-size:1.5em"><span style="font-weight:bold;">#fcst_day_0_tmin#°</span> | <span style="font-weight:bold;">#fcst_day_0_tmax#°</span></div>
+
+				<div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:10px;"><br /><span><i class="fas fa-tachometer-alt"></i> #fcst_day_0_PRMSL# Hpa</span><br /></div>
+				<div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:5px;"><span><i class="fas fa-flag"></i> #fcst_day_0_WNDSPD10m# km/h</span><br /></div>
+				<div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:10px;"><span><i class="icon meteo-orage"></i> #fcst_day_0_KINDEX# %</span><br /></div>
+			</div>                
+		</div>
+		<div style="float:left;width:50%;">
+			<div class="meteo-content">
+				<br />
+				<table style="background-color: transparent !important">
+				<tr>
+					   <th>#fcst_day_1_day_long#</th>
+					   <th>#fcst_day_2_day_long#</th>
+					   <th>#fcst_day_3_day_long#</th>
+					   <th>#fcst_day_4_day_long#</th>
+				   </tr>
+				   <tr>
+					   <td><img src="#fcst_day_1_icon#" width="45" height="45"  />  </td>
+					   <td><img src="#fcst_day_2_icon#" width="45" height="45"  />  </td>
+					   <td><img src="#fcst_day_3_icon#" width="45" height="45"  />  </td>
+					   <td><img src="#fcst_day_4_icon#" width="45" height="45"  />  </td>
+				   </tr>
+				   <tr>
+					   <td>#fcst_day_1_tmin# | #fcst_day_1_tmax#</td>
+					   <td>#fcst_day_2_tmin# | #fcst_day_2_tmax#</td>
+					   <td>#fcst_day_3_tmin# | #fcst_day_3_tmax#</td>
+					   <td>#fcst_day_4_tmin# | #fcst_day_4_tmax#</td>
+				   </tr>
+				</table>                
+			</div>
+			<div style="text-align:center;margin-top:5px;">
+				<div class="meteo-content " style="text-align:center;margin-bottom:10px;"><span >Isotherme : #fcst_day_0_HGT0C#  m</span></div>
+				<div class="meteo-content " style="text-align:center;"><span> Point de rosée : #fcst_day_0_DPT2m# °C</span></div>
+			</div>
+		</div>
 	</center>
 
 </div>

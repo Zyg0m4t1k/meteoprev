@@ -440,12 +440,26 @@ class meteoprev extends eqLogic {
 					  
 		  if ($this->getConfiguration("widgetCustom") == 0) {
 			$cmds = $this->getCmd();
+			$replace['#condition#'] = "";
 			foreach ($cmds as $cmd) {
-				$replace['#' . $cmd->getLogicalId() . '#'] = $cmd->execCmd();
+				if( $cmd->getLogicalId() == "current_condition_tmp"){
+					$replace['#' . $cmd->getLogicalId() . '#'] = $cmd->execCmd();
+					$humidex = $this->getCmd(null,  'fcst_day_0_WNDCHILL2m');
+					if (!is_object($humidex)) {
+						continue;
+					}
+					$value = $humidex->execCmd();
+					
+					if($cmd->execCmd() > 20) {
+						$replace['#condition#'] = '<div class="meteo-content" style="margin-top:5px;"><span>Humidex : ' . $value .'</span></div>';
+					} elseif ($cmd->execCmd() <= 10) {
+						$replace['#condition#'] = '<div class="meteo-content" style="margin-top:5px;"><span><i class="fas fa-thermometer-three-quarters"></i> ressentie ' . $value . ' °C</span></div>';						
+					}
+					
+				} else {
+					$replace['#' . $cmd->getLogicalId() . '#'] = $cmd->execCmd();
+				}
 			}
-			$i = "<i class='fas fa-bar-chart pull-right cursor chart' style='margin-top: 10px;margin-right: 10px;' onClick='stats_" . $this->getId() . "()'></i>";
-			$replace['#i#'] = $i;
-			
 			return template_replace($replace, getTemplate('core', $version, 'eqLogic', 'meteoprev'));
 		  }
 		 else {
@@ -454,9 +468,6 @@ class meteoprev extends eqLogic {
 			foreach ($cmds as $cmd) {
 				$replace['#' . $cmd->getLogicalId() . '#'] = $cmd->execCmd();
 			}
-			$i = "<i class='fas fa-chart-bar pull-right cursor chart' style='margin-top: 5px;' onClick='stats_" . $this->getId() . "()'></i>";
-			$replace['#i#'] = $i;			 
-			 
 			 $infos = array ("temperature" => "fcst_day_0_TMP2m","humidite" => "fcst_day_0_RH2m","pression" => "fcst_day_0_PRMSL","vent" => "fcst_day_0_WNDSPD10m","pluieInst" => "fcst_day_0_APCPsfc","pluieTot" => "rain_0");
 			 
 			 foreach ($infos as $key => $value) {

@@ -35,6 +35,8 @@ Les widgets
 Le Widget par défaut
 ---
 
+>  Lorsque la température est égale ou inférieure à 10 °C le windchill est indiqué. Lorsque les températures dépassent 20 °C l'humidex est indiqué ==> [ici](https://fr.wikipedia.org/wiki/Indice_humidex)
+
 ![meteoprev1](../images/meteoprev1.png)
 
 ![meteoprev2](../images/meteoprev2.png)
