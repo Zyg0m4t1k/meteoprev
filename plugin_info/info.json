@@ -9,5 +9,6 @@
 	"hasDependency" : false,
 	"hasOwnDeamon" : false,
 	"changelog" : "https://zyg0m4t1k.github.io/meteoprev/#language#/changelog",
-	"documentation" : "https://zyg0m4t1k.github.io/meteoprev/#language#/"
+	"documentation" : "https://zyg0m4t1k.github.io/meteoprev/#language#/",
+	"compatibility" : ["miniplus","smart","rpi","docker","diy"]
 }
