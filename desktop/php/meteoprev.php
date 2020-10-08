@@ -100,6 +100,18 @@ $eqLogics = eqLogic::byType($plugin->getId());
 						</div>
 					</div>
 					<div class="form-group">
+						<label class="col-sm-3 control-label" >{{Fréquence de rafraichissement des données (par défaut : */10 * * * *)}}</label>
+						<div class="col-sm-3">
+							<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="refreshCron"/>
+						</div>
+						<div class="col-sm-1">
+							<i class="fas fa-question-circle cursor floatright" id="bt_cronGenerator"></i>
+						</div>
+					</div> 
+					
+					
+					
+					<div class="form-group">
 						<label class="col-md-3 control-label" >{{Widget personnalisé}}</label>
 						<div class="col-md-1" >
 							</span><input type="checkbox" class="eqLogicAttr checkbox-inline" data-l1key="configuration"  data-l2key="widgetCustom"  />

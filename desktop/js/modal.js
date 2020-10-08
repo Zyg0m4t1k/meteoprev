@@ -4,7 +4,7 @@ var hour = new Date().getHours() + '' +   new Date().getDay() ,
  	wHeight = $(window).height(),
 	dHeight = wHeight * 0.7;
 
-
+console.log('modal')
 $.getJSON('/plugins/meteoprev/data/' + filename + '_days.json', function(json) {
 	window.meteogram = new Meteogram(json, 'container');
 });

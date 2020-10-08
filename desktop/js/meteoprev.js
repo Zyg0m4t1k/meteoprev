@@ -21,6 +21,12 @@ $("#table_cmd").sortable({axis: "y", cursor: "move", items: ".cmd", placeholder:
  * Fonction pour l'ajout de commande, appellé automatiquement par plugin.template
  */
  
+$('#bt_cronGenerator').on('click',function(){
+    jeedom.getCronSelectModal({},function (result) {
+        $('.eqLogicAttr[data-l1key=configuration][data-l2key=refreshCron]').value(result.value);
+    });
+});
+
  $(".form-group").delegate(".listCmdInfo", 'click', function () {
     var el = $('.' + $(this).attr('data-input')).find('input');
 	el.empty();
