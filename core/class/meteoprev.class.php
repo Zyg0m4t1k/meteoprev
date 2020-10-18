@@ -355,7 +355,9 @@ class meteoprev extends eqLogic {
     }
 
     public function preSave() {
-        
+		if($this->getConfiguration('refreshCron') == '') {
+			$this->setConfiguration('refreshCron',rand(1,9) . ' * * * *');
+		}
     }
 
     public function postSave() {
