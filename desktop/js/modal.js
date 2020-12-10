@@ -3,8 +3,8 @@
 var hour = new Date().getHours() + '' +   new Date().getDay() ,
  	wHeight = $(window).height(),
 	dHeight = wHeight * 0.7;
-
-console.log('modal')
+var dateutc = new Date();
+console.log(dateutc.getUTCDate())
 $.getJSON('/plugins/meteoprev/data/' + filename + '_days.json', function(json) {
 	window.meteogram = new Meteogram(json, 'container');
 });
@@ -179,7 +179,7 @@ Meteogram.prototype.getChartOptions = function () {
             minorTickInterval: 2 * 36e5, // one hour
             tickLength: 0,
             gridLineWidth: 1,
-            gridLineColor: (Highcharts.theme && Highcharts.theme.background2) || '#F0F0F0',
+            gridLineColor: 'rgba(128, 128, 128, 0.1)',
             startOnTick: false,
             endOnTick: false,
             minPadding: 0,
@@ -188,11 +188,11 @@ Meteogram.prototype.getChartOptions = function () {
             showLastLabel: true,
             labels: {
                 format: '{value:%Hh}'
-            }
+            }		
         }, { // Top X axis
             linkedTo: 0,
             type: 'datetime',
-            tickInterval: 24 * 3600 * 1000,
+            tickInterval: 24 * 3600 * 1000,				
             labels: {
                 format: '{value:<span style="font-size: 12px; font-weight: bold">%a</span> %e %b}',
                 align: 'left',
@@ -358,7 +358,7 @@ Meteogram.prototype.getChartOptions = function () {
 			pointPadding: 0,
             pointPlacement: -0.1,
             type: 'column',
-            color: 'rgba(104,207,232,1)',
+            color: 'rgba(104,207,232,0.8)',
             yAxis: 2,
             groupPadding: 0,
             borderWidth: 0,
@@ -385,9 +385,40 @@ Meteogram.prototype.onChartLoad = function (chart) {
 
    this.drawWeatherSymbols(chart);
    this.drawWindArrows(chart);
-  // this.drawBlocksForWindArrows(chart);
+   this.drawBlocksForWindArrows(chart);
 
 };
+
+Meteogram.prototype.drawBlocksForWindArrows = function (chart) {
+    var xAxis = chart.xAxis[0],
+        x,
+        pos,
+        max,
+        isLong,
+        isLast,
+        i;
+
+    for (pos = xAxis.min, max = xAxis.max, i = 0; pos <= max + 36e5; pos += 36e5, i += 1) {
+
+        // Get the X position
+        isLast = pos === max + 36e5;
+        x = Math.round(xAxis.toPixels(pos)) + (isLast ? 0.5 : -0.5);
+
+        // Draw the vertical dividers and ticks
+        if (this.resolution > 36e5) {
+            isLong = pos % this.resolution === 0;
+        } else {
+            isLong = i % 2 === 0;
+        }
+        chart.renderer.path(['M', x, chart.plotTop + chart.plotHeight + (isLong ? 0 : 28),
+            'L', x, chart.plotTop + chart.plotHeight + 32, 'Z'])
+            .attr({
+                stroke: chart.options.chart.plotBorderColor,
+                'stroke-width': 1
+            })
+            .add();
+    }
+};	
 
 Meteogram.prototype.windArrow = function (name) {
     var level,
@@ -474,42 +505,6 @@ Meteogram.prototype.drawWindArrows = function (chart) {
     });
 };
 
-Meteogram.prototype.drawBlocksForWindArrows = function (chart) {
-    var xAxis = chart.xAxis[0],
-        x,
-        pos,
-        max,
-        isLong,
-        isLast,
-        i;
-
-    for (pos = xAxis.min, max = xAxis.max, i = 0; pos <= max + 36e5; pos += 36e5, i += 1) {
-
-        // Get the X position
-        isLast = pos === max + 36e5;
-        x = Math.round(xAxis.toPixels(pos)) + (isLast ? 0.5 : -0.5);
-
-        // Draw the vertical dividers and ticks
-        if (this.resolution > 36e5) {
-            isLong = pos % this.resolution === 0;
-        } else {
-            isLong = i % 2 === 0;
-        }
-        chart.renderer.path(['M', x, chart.plotTop + chart.plotHeight + (isLong ? 0 : 28),
-            'L', x, chart.plotTop + chart.plotHeight + 32, 'Z'])
-            .attr({
-                'stroke': chart.options.chart.plotBorderColor,
-                'stroke-width': 1
-            })
-            .add();
-    }
-
-      // Center items in block
-    chart.get('windbarbs').markerGroup.attr({
-        translateX: chart.get('windbarbs').markerGroup.translateX + 8
-    });
-
-};
 
 Meteogram.prototype.drawWeatherSymbols = function (chart) {
     var meteogram = this;
@@ -556,24 +551,22 @@ Meteogram.prototype.tooltipFormatter = function (tooltip) {
         ret = '<small>' + Highcharts.dateFormat('%A %e %b %H:%M', tooltip.x) + ' </small><br>';
 		ret += '<b>' + this.conditions[index] + ' </b><br>';
     // Symbol text
-    ret += '<table>';
-	
 	
     // Add all series
     Highcharts.each(tooltip.points, function (point) {
         var series = point.series;
-        ret += '<tr><td><span style="color:' + series.color + '">\u25CF</span> ' + series.name +
-            ': </td><td style="white-space:nowrap">' + Highcharts.pick(point.point.value, point.y) +
-            series.options.tooltip.valueSuffix + '</td></tr>';
+        ret += '<span style="color:' + series.color + '">\u25CF</span> ' + series.name +
+            ':' + Highcharts.pick(point.point.value, point.y) +
+            series.options.tooltip.valueSuffix + '<br/>' ;
     });
 
     // Add wind
-    ret += '<tr><td style="vertical-align: top">\u25CF Vent</td><td style="white-space:nowrap">' + this.windDirectionNames[index] +
-        '<br>' + this.windSpeedNames[index] + ' (' +
-        Highcharts.numberFormat(this.windSpeeds[index], 1) + ' km/h)</td></tr>';
+    ret += '\u25CF Vent :' + this.windDirectionNames[index] +
+        '<br>\u25B7 ' + this.windSpeedNames[index] + ' (' +
+        Highcharts.numberFormat(this.windSpeeds[index], 1) + ' km/h)';
 
     // Close
-    ret += '</table>';
+
 
 
     return ret;

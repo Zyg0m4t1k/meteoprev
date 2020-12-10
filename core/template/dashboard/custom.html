@@ -1,4 +1,4 @@
-<div class="eqLogic eqLogic-widget allowResize" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;min-height:245px;#style#;">
+<div class="eqLogic eqLogic-widget allowResize #eqType#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;min-height:245px;#style#;">
 	<center class="widget-name">
 		<span class="warning" title="#alert_name#">
 			<i class='#alert_icon#'></i>
@@ -38,19 +38,19 @@
 			<div class="meteo-content">
 				<br />
 				<table>
-				<tr>
+					<tr style="background-color: transparent !important">
 					   <th>#fcst_day_1_day_long#</th>
 					   <th>#fcst_day_2_day_long#</th>
 					   <th>#fcst_day_3_day_long#</th>
 					   <th>#fcst_day_4_day_long#</th>
 				   </tr>
-				   <tr style="background: transparent !important">
+				   <tr style="background-color: transparent !important">
 					   <td><img src="#fcst_day_1_icon#" width="45" height="45"  />  </td>
 					   <td><img src="#fcst_day_2_icon#" width="45" height="45"  />  </td>
 					   <td><img src="#fcst_day_3_icon#" width="45" height="45"  />  </td>
 					   <td><img src="#fcst_day_4_icon#" width="45" height="45"  />  </td>
 				   </tr>
-				   <tr style="background: transparent !important">
+				   <tr style="background-color: transparent !important">
 					   <td>#fcst_day_1_tmin# | #fcst_day_1_tmax#</td>
 					   <td>#fcst_day_2_tmin# | #fcst_day_2_tmax#</td>
 					   <td>#fcst_day_3_tmin# | #fcst_day_3_tmax#</td>
@@ -66,11 +66,11 @@
 	</center>
 	 <script>
 		var wWidth = $(window).width();
-		var dWidth = wWidth * 0.8;
+		var dWidth = wWidth * 0.9;
 		var wHeight = $(window).height();
 		var dHeight = wHeight * 0.8;
 		$('#md_modal2').dialog({
-			width: dWidth,
+			minWidth: dWidth,
 			height: dHeight,
 			autoOpen: false,
 			modal: true,

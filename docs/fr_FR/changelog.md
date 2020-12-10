@@ -1,7 +1,13 @@
+10.12.2020
+===
+
+- Trasparence widget
+- Fix tooltip
+
 18.10.2020
 ===
 
-- Ajout d'un cron qui se créé automatiquement lors de la mise à jour)
+- Ajout d'un cron qui se créé automatiquement lors de la mise à jour
 
 
 03.11.2019
