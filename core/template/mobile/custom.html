@@ -1,70 +1,125 @@
-<div class="eqLogic eqLogic-widget #eqType#" style="width: #width#;height: #height#;min-height:245px; min-width:510px;#style#;" data-eqLogic_id="#id#" data-eqType="#eqType#" data-version="#version#" data-eqLogic_uid="#uid#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" >
+<div class="eqLogic eqLogic-widget #eqType#" style="min-height:225px; min-width:510px;#style#;" data-eqLogic_id="#id#" data-eqType="#eqType#" data-version="#version#" data-eqLogic_uid="#uid#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" >
+	<script src="plugins/meteoprev/desktop/js/dashboard.js"></script>
+	<span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
+		<i class="fas fa-sync"></i>
+	</span>
+	<span id="show_graph_#id#" class="pull-left cursor" style="position:absolute;top:2px;left:5px">
+		<i class="fas fa-chart-bar"></i>
+	</span>	
+	<span class="statusCmd"></span>
 	<center>
 		<span class="widget-name">
 			<span style="#hideEqLogicName#">#name_display# <span class="object_name">#object_name#</span></span><br/>
 		</span>
-	</center> 
+	</center>
  	<center>
-		<div style="float:left;width:50%">
-			<div style="float:left;width:60%;padding-left:30px;">
-				<div class="meteo-content">
-					<img src="https://www.prevision-meteo.ch/style/images/icon/#fcst_day_0_CONDITION_KEY#-big.png" /> 
-				</div>
-				<div class="meteo-content" style="padding-left:10px;"> 
+		<div style="width:100%" id="mpv_forecast_#id#">
+			<div style="float:left;width:50%">
+				<div style="float:left;width:60%;padding-top: 40px;">
 					<div class="meteo-content">
-					<span><i class="fas fa-tint"></i> #fcst_day_0_RH2m#</span> % <br />    
-					</div> 				
+						<img src="https://www.prevision-meteo.ch/style/images/icon/#fcst_day_0_CONDITION_KEY#-big.png" height="80" width="80" /> 
+					</div>
+					<div class="meteo-content"> 
+						<div class="meteo-content">
+						<span><i class="fas fa-tint"></i> #fcst_day_0_RH2m#</span> % <br />    
+						</div> 				
+					</div>
+				</div>
+				<div style="float:left;width:40%">
+					<div class="meteo-content" style="text-align:center;margin-bottom:5px;"><br /><span style="margin-left:15px;font-size:2em;font-weight:bold;">#fcst_day_0_TMP2m#°</span><br /></div>
+					<div class="meteo-content " style="text-align:center;margin-bottom:5px;margin-left:15px;"><span style="font-size:1em;font-weight:bold;">#fcst_day_0_CONDITION#</span><br /></div>
+					<div class="meteo-content " style="text-align:center;font-size:1.5em"><span style="font-weight:bold;">#fcst_day_0_tmin#°</span> | <span style="font-weight:bold;">#fcst_day_0_tmax#°</span></div>
+
+					<div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:10px;"><br /><span><i class="fas fa-tachometer-alt"></i> #fcst_day_0_PRMSL# Hpa</span><br /></div>
+					<div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:5px;"><span><i class="fas fa-flag"></i> #fcst_day_0_WNDSPD10m# km/h</span><br /></div>
+					<div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:10px;"><span><i class="icon meteo-orage"></i> #fcst_day_0_KINDEX# %</span><br /></div>
+				</div>                
+			</div>
+			<div style="float:left;width:50%;">
+				<div class="meteo-content">
+					<br />
+					<table>
+					<tr style="background-color: transparent !important">
+						   <th>#fcst_day_1_day_long#</th>
+						   <th>#fcst_day_2_day_long#</th>
+						   <th>#fcst_day_3_day_long#</th>
+						   <th>#fcst_day_4_day_long#</th>
+					   </tr>
+					   <tr style="background-color: transparent !important">
+						   <td><img src="#fcst_day_1_icon#" width="45" height="45"  />  </td>
+						   <td><img src="#fcst_day_2_icon#" width="45" height="45"  />  </td>
+						   <td><img src="#fcst_day_3_icon#" width="45" height="45"  />  </td>
+						   <td><img src="#fcst_day_4_icon#" width="45" height="45"  />  </td>
+					   </tr>
+					   <tr style="background-color: transparent !important">
+						   <td>#fcst_day_1_tmin# | #fcst_day_1_tmax#</td>
+						   <td>#fcst_day_2_tmin# | #fcst_day_2_tmax#</td>
+						   <td>#fcst_day_3_tmin# | #fcst_day_3_tmax#</td>
+						   <td>#fcst_day_4_tmin# | #fcst_day_4_tmax#</td>
+					   </tr>
+					</table>                
+				</div>
+				<div style="text-align:center;margin-top:5px;">
+					<div class="meteo-content " style="text-align:center;margin-bottom:10px;"><span >Isotherme : #fcst_day_0_HGT0C#  m</span></div>
+					<div class="meteo-content " style="text-align:center;"><span> Point de rosée : #fcst_day_0_DPT2m# °C</span></div>
 				</div>
 			</div>
-
-			<div style="float:left;width:40%">
-				<div class="meteo-content" style="text-align:center;margin-bottom:5px;"><br /><span style="margin-left:15px;font-size:2em;font-weight:bold;">#fcst_day_0_TMP2m#°</span><br /></div>
-				<div class="meteo-content " style="text-align:center;margin-bottom:5px;margin-left:15px;"><span style="font-size:1em;font-weight:bold;">#fcst_day_0_CONDITION#</span><br /></div>
-				<div class="meteo-content " style="text-align:center;font-size:1.5em"><span style="font-weight:bold;">#fcst_day_0_tmin#°</span> | <span style="font-weight:bold;">#fcst_day_0_tmax#°</span></div>
-
-				<div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:10px;"><br /><span><i class="fas fa-tachometer-alt"></i> #fcst_day_0_PRMSL# Hpa</span><br /></div>
-				<div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:5px;"><span><i class="fas fa-flag"></i> #fcst_day_0_WNDSPD10m# km/h</span><br /></div>
-				<div class="meteo-content " style="text-align:center;margin-left:10px;margin-bottom:10px;"><span><i class="icon meteo-orage"></i> #fcst_day_0_KINDEX# %</span><br /></div>
-			</div>                
-		</div>
-		<div style="float:left;width:50%;">
-			<div class="meteo-content">
-				<br />
-				<table>
-				<tr style="background-color: transparent !important">
-					   <th>#fcst_day_1_day_long#</th>
-					   <th>#fcst_day_2_day_long#</th>
-					   <th>#fcst_day_3_day_long#</th>
-					   <th>#fcst_day_4_day_long#</th>
-				   </tr>
-				   <tr style="background-color: transparent !important">
-					   <td><img src="#fcst_day_1_icon#" width="45" height="45"  />  </td>
-					   <td><img src="#fcst_day_2_icon#" width="45" height="45"  />  </td>
-					   <td><img src="#fcst_day_3_icon#" width="45" height="45"  />  </td>
-					   <td><img src="#fcst_day_4_icon#" width="45" height="45"  />  </td>
-				   </tr>
-				   <tr style="background-color: transparent !important">
-					   <td>#fcst_day_1_tmin# | #fcst_day_1_tmax#</td>
-					   <td>#fcst_day_2_tmin# | #fcst_day_2_tmax#</td>
-					   <td>#fcst_day_3_tmin# | #fcst_day_3_tmax#</td>
-					   <td>#fcst_day_4_tmin# | #fcst_day_4_tmax#</td>
-				   </tr>
-				</table>                
-			</div>
-			<div style="text-align:center;margin-top:5px;">
-				<div class="meteo-content " style="text-align:center;margin-bottom:10px;"><span >Isotherme : #fcst_day_0_HGT0C#  m</span></div>
-				<div class="meteo-content " style="text-align:center;"><span> Point de rosée : #fcst_day_0_DPT2m# °C</span></div>
-			</div>
+		</div>	
+		<div>
+			<div class="mpv_graph_#id#" style="position:absolute;top:25px;display:none">
+<!--				<button type="button" class="day_choose_#id#" data-count="0">#fcst_day_0_day_short#</button>
+				<button type="button" class="day_choose_#id#" data-count="1">#fcst_day_1_day_short#</button>
+				<button type="button" class="day_choose_#id#" data-count="2">#fcst_day_2_day_short#</button>
+				<button type="button" class="day_choose_#id#" data-count="3">#fcst_day_3_day_short#</button>
+				<button type="button" class="day_choose_#id#" data-count="4">#fcst_day_4_day_short#</button>-->
+				<div style="position: absolute;left:165px;z-index: 1">
+					<btn class="day_choose_#id# cursor" data-count="0">#fcst_day_0_day_short#</btn>
+					<btn class="day_choose_#id# cursor" data-count="1">#fcst_day_1_day_short#</btn>
+					<btn class="day_choose_#id# cursor" data-count="2">#fcst_day_2_day_short#</btn>
+					<btn class="day_choose_#id# cursor" data-count="3">#fcst_day_3_day_short#</btn>
+					<btn class="day_choose_#id# cursor" data-count="4">#fcst_day_4_day_short#</btn>
+				</div>
+				<div class="mpv_graph_#id#" id="mpv_container_#id#" style="width:510px ;height: 200px;display:none">
+				</div>				
+				
+			</div>	
 		</div>
 	</center>
+	<script>
+		let forecast_#id# = true;
+		if ('#refresh_id#' != '') {
+			$('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
+				jeedom.cmd.execute({id: '#refresh_id#'})
+			})
+		} else {
+			$('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
+		}
+		$('.eqLogic[data-eqLogic_uid=#uid#] #show_graph_#id#').click(function(){
+		   $("#mpv_forecast_#id#, .mpv_graph_#id#").slideToggle("slow");
+		});	
+		$('.eqLogic[data-eqLogic_uid=#uid#] .day_choose_#id#').on('click', function () {
+			_count = $(this).attr('data-count');
+			meteoprevGraph('#station#', _count, 'mpv_container_#id#', 190);
+		});	
+		 
+		$('.eqLogic[data-eqLogic_uid=#uid#] #show_graph_#id#').click(function(){
+			if(forecast_#id# === true) {
+			   	$('.eqLogic[data-eqLogic_uid=#uid#] #mpv_forecast_#id#').hide("slow");
+			    $('.eqLogic[data-eqLogic_uid=#uid#] .mpv_graph_#id').show("slow");
+				forecast_#id# = false;
+			 } else {
+			   	$('.eqLogic[data-eqLogic_uid=#uid#] #mpv_forecast_#id#').show("slow");
+			    $('.eqLogic[data-eqLogic_uid=#uid#] .mpv_graph_#id').hide("slow");
+				forecast_#id# = true;													 
+			}
+		});			 
+		meteoprevGraph('#station#', 0, 'mpv_container_#id#', 190);
+	</script>
 </div>
-
 <style>
 	.meteo-content th , .meteo-content td {
 		padding:5px;
 		text-align:center;
 	}
-	
-
 </style>
 

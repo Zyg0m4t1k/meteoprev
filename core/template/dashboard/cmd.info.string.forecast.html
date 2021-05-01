@@ -1,0 +1,45 @@
+<div class="cmd cmd-widget" data-type="info" data-subtype="string" data-cmd_id="#id#" data-cmd_uid="#uid#" data-version="#version#" data-eqLogic_id="#eqLogic_id#">
+	<div class="title #hide_name#">
+		<div class="cmdName">#name_display#</div>
+	</div>
+	<div id="forecast_#id#" class="row">
+	</div>
+	<script>
+		jeedom.cmd.update['#id#'] = function(_options) {
+			let cmd = $('.cmd[data-cmd_id=#id#]'),
+				el= $('.cmd[data-eqLogic_id=#eqLogic_id#] #forecast_#id#'),
+				id = cmd.attr('data-eqLogic_id');
+			$.ajax({
+				type: 'POST',
+				url: 'plugins/meteoprev/core/ajax/meteoprev.ajax.php',
+				global:false,
+				data: {
+					action: 'getForecastHtml',
+					id: id
+				},
+				dataType: 'json',
+				error: function (request, status, error) {
+					handleAjaxError(request, status, error);
+				},
+				success: function (data) {
+					if (data.state != 'ok') {
+						el.showAlert({message: data.result, level: 'danger'});
+						return;
+					}
+					if (data.result.state == 'ok') {
+						el.empty().append(data.result.html);
+					} else {
+						el.empty().append('Une erreur est survenue dans la récupération des informations');
+					}
+				}
+		   });	
+		}
+		jeedom.cmd.update['#id#']({display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#'})		
+	</script>
+	<style>
+		.cmd[data-cmd_uid="#uid#"] th , .cmd[data-cmd_uid="#uid#"] td  {
+			padding:2px;
+			text-align: center;
+		}
+	</style>
+</div>

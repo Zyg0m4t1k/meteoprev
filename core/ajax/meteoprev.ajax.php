@@ -22,14 +22,49 @@ try {
 
 
     ajax::init();
-	
-//    if (init('action') == 'getDatas') {
-//		$eqlogic = meteoprev::byId(init('id'));
-//		$file =  dirname(__FILE__) . '/../../data/' . $eqlogic->getConfiguration('station') .'_days.json';
-//		
-//		ajax::success(@file_get_contents($file));
-//    }
 
+	switch (init('action')) {
+		case 'getForecastHtml':
+			$id = init('id');
+			$eq = eqLogic::byId($id);
+			if(!is_object($eq)) {
+				ajax::success(array('state' => 'nok'));
+			}
+			$file = __DIR__ . '/../config/forecast.html';
+			$html = file_get_contents($file);
+			$file = __DIR__ . '/../../data/' . $eq->getConfiguration('station') . '_days.json';
+			$datas = json_decode(file_get_contents($file),true);
+			$replace = array();
+			foreach ($datas as $key => $values) {
+				foreach($values as $k => $v) {
+					if(!is_array($v)) {
+						$replace[ '#' . $key . '_' . $k . '#' ] = $v;
+					}
+				}
+			}
+			ajax::success(array('state' => 'ok' , 'html' => template_replace($replace, $html) ));
+			break;
+		case 'getStation':
+			$id = init('id');
+			$eq = eqLogic::byId($id);			
+			if(!is_object($eq)) {
+				ajax::success(array('state' => 'nok'));
+			}
+			$file = __DIR__ . '/../config/graph.html';
+			$html = file_get_contents($file);
+			$file = __DIR__ . '/../../data/' . $eq->getConfiguration('station') . '_days.json';
+			$datas = json_decode(file_get_contents($file),true);
+			$replace = array();
+			foreach ($datas as $key => $values) {
+				foreach($values as $k => $v) {
+					if(!is_array($v)) {
+						$replace[ '#' . $key . '_' . $k . '#' ] = $v;
+					}
+				}
+			}			
+			ajax::success(array('state' => 'ok' , 'station' => $eq->getConfiguration('station'), 'html' => template_replace($replace, $html)  ));
+			break;			
+	}
 
     throw new Exception(__('Aucune méthode correspondante à : ', __FILE__) . init('action'));
     /*     * *********Catch exeption*************** */

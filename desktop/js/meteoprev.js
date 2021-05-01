@@ -28,31 +28,38 @@ $('#bt_cronGenerator').on('click',function(){
 });
 
  $(".form-group").delegate(".listCmdInfo", 'click', function () {
-    var el = $('.' + $(this).attr('data-input')).find('input');
+    let el = $('.' + $(this).attr('data-input')).find('input');
 	el.empty();
     jeedom.cmd.getSelectModal({cmd: {type: 'info'}}, function (result) {
         el.atCaret('insert', result.human);
     });
 });
 
-function printEqLogic(_eqLogic) {
-	if (isset(_eqLogic.configuration)) {
-		if (_eqLogic.configuration.widgetCustom == 1) {	
-			$('#custom').show();				
-		} else {
-			$('#custom').hide();
-		}
-	}
-}
+$("body").undelegate(".checkbox-widget", 'change ').delegate('.checkbox-widget', 'change ', function () {
+	( $(this).attr('data-l2key') == 'widgetCustom' && $(this).value() == 1 ) ? $('#custom').show() : $('#custom').hide();
+	$('.checkbox-widget').not(this).each(function(){
+		$( this ).prop("checked", false);
+	});
+});
+
+//function printEqLogic(_eqLogic) {
+//	if (isset(_eqLogic.configuration)) {
+//		_eqLogic.configuration.widgetCustom == 1 ? $('#custom').show() : $('#custom').hide();
+//	}
+//}
 
 function addCmdToTable(_cmd) {
     if (!isset(_cmd)) {
-        var _cmd = {configuration: {}};
+        let _cmd = {configuration: {}};
     }
     if (!isset(_cmd.configuration)) {
         _cmd.configuration = {};
     }
-    var tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">';
+	let type = '';
+    if (isset(_cmd.configuration.type)) {
+       type = _cmd.configuration.type;
+    }	
+    let tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">';
     tr += '<td>';
     tr += '<span class="cmdAttr" data-l1key="id" style="display:none;"></span>';
     tr += '<input class="cmdAttr form-control input-sm" data-l1key="name" style="width : 200px;" placeholder="{{Nom}}">';
@@ -61,7 +68,16 @@ function addCmdToTable(_cmd) {
     tr += '<span class="type" type="' + init(_cmd.type) + '">' + jeedom.cmd.availableType() + '</span>';
     tr += '<span class="subType" subType="' + init(_cmd.subType) + '"></span>';
     tr += '</td>';
-    tr += '<td>';
+	if(type == '') {
+		tr += '<td>';
+		if (isset(_cmd.unite) && _cmd.unite != '') {
+			tr += '<input class="cmdAttr form-control input-sm" data-l1key="unite" placeholder="Unité" title="{{Unité}}" style="width:10%;display:inline-block;margin-left:2px;margin-right:5px;">';
+		}
+		tr += '<span><label class="checkbox-inline"><input type="checkbox" class="cmdAttr checkbox-inline" data-l1key="isVisible" checked/>{{Afficher}}</label></span> ';
+		tr += '<span><label class="checkbox-inline"><input type="checkbox" class="cmdAttr checkbox-inline" data-l1key="isHistorized" checked/>{{Historiser}}</label></span> ';
+		tr += '</td>';		
+	}
+	tr += '<td>';
     if (is_numeric(_cmd.id)) {
         tr += '<a class="btn btn-default btn-xs cmdAction" data-action="configure"><i class="fas fa-cogs"></i></a> ';
         tr += '<a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fas fa-rss"></i> {{Tester}}</a>';
@@ -69,10 +85,10 @@ function addCmdToTable(_cmd) {
     tr += '<i class="fas fa-minus-circle pull-right cmdAction cursor" data-action="remove"></i>';
     tr += '</td>';
     tr += '</tr>';
-    $('#table_cmd tbody').append(tr);
-    $('#table_cmd tbody tr:last').setValues(_cmd, '.cmdAttr');
+    $('#table_cmd' + type + ' tbody').append(tr);
+    $('#table_cmd' + type + ' tbody tr:last').setValues(_cmd, '.cmdAttr');
     if (isset(_cmd.type)) {
-        $('#table_cmd tbody tr:last .cmdAttr[data-l1key=type]').value(init(_cmd.type));
+        $('#table_cmd' + type + ' tbody tr:last .cmdAttr[data-l1key=type]').value(init(_cmd.type));
     }
-    jeedom.cmd.changeType($('#table_cmd tbody tr:last'), init(_cmd.subType));
+    jeedom.cmd.changeType($('#table_cmd' + type + ' tbody tr:last'), init(_cmd.subType));
 }

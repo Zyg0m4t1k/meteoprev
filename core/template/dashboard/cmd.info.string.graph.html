@@ -1,0 +1,60 @@
+<div class="cmd cmd-widget" data-type="info" data-subtype="string" data-cmd_id="#id#" data-cmd_uid="#uid#" data-version="#version#" data-eqLogic_id="#eqLogic_id#" >
+	<script src="plugins/meteoprev/desktop/js/dashboard.js"></script>
+	<div class="title #hide_name#">
+		<div class="cmdName">#name_display#</div>
+	</div>
+	<center style="margin-top: 5px;">
+		<div id="mpv_days_#id#" >
+			<div id="days_#id#">
+			</div>
+		</div>		
+		<div class="mpv_graph_#id#" id="mpv_container_#id#" style="width: 500px;height: 210px;">
+		</div>
+	</center>	
+	<script>
+		jeedom.cmd.update['#id#'] = function(_options) {
+			let cmd = $('.cmd[data-cmd_id=#id#]'),
+				el= $('.cmd[data-eqLogic_id=#eqLogic_id#] #mpv_graph_#id#'),
+				id_days = $('.cmd[data-eqLogic_id=#eqLogic_id#] #days_#id#'),
+				id = cmd.attr('data-eqLogic_id');
+			$.ajax({
+				type: 'POST',
+				url: 'plugins/meteoprev/core/ajax/meteoprev.ajax.php',
+				global:false,
+				async:false,
+				data: {
+					action: 'getStation',
+					id: id
+				},
+				dataType: 'json',
+				error: function (request, status, error) {
+					handleAjaxError(request, status, error);
+				},
+				success: function (data) {
+					if (data.state != 'ok') {
+						el.showAlert({message: data.result, level: 'danger'});
+						return;
+					}
+					if (data.result.state == 'ok') {
+						id_days.empty().append(data.result.html);						
+						$('.cmd[data-cmd_uid=#uid#] .day_choose').on('click', function () {
+							meteoprevGraph(data.result.station, $(this).attr('data-count'), 'mpv_container_#id#', 195);
+						});
+						let _station = data.result.station,
+							_container = 'mpv_container_#id#';
+						meteoprevGraph(_station, 0, _container, 195);
+					} else {
+						el.empty().append('Une erreur est survenue dans la récupération des informations');
+					}
+				}
+		   });			
+		}
+		jeedom.cmd.update['#id#']({display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#'})
+	</script>
+	<style>
+		.cmd[data-cmd_uid="#uid#"] #mpv_days_#id# {
+			position: absolute;
+			z-index: 1;
+		}
+	</style>
+</div>
