@@ -1,21 +1,17 @@
 <div class="eqLogic eqLogic-widget allowResize" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;min-height:225px;#style#;">
 	<script src="plugins/meteoprev/desktop/js/dashboard.js"></script>
-	<center class="widget-name">
-		<span class="warning" title="#alert_name#">
-			<i class='#alert_icon#'></i>
-		</span>
-		<span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
-			<i class="fas fa-sync"></i>
-		</span>
-		<span id="show_graph_#id#" class="pull-left cursor"><i class="fas fa-chart-bar"></i></span>
-		<span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
-		<a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
-	</center>
- 	<center>
+	<span class="statusCmd"></span>
+	<span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
+	<i class="fas fa-sync"></i>
+	</span>
+	<span class="cmd cmd-widget" data-cmd_id="#refresh_id#" style="display:none;"></span>		
+	<span id="show_graph_#id#" class="pull-left cursor"><i class="fas fa-chart-bar"></i></span>
+	<center class="widget-name"><a href="#eqLink#">#name_display# <span class="object_name">#object_name#</span></a></center>
+ 	<div class="verticalAlign">
 		<div id="mpv_forecast_#id#" class="row">
 			<br/>		
-			<div style="float:left;width:50%">
-				<div style="float:left;width:60%;">
+			<div style="float:left;width:50%;margin-top: -40px;">
+				<div style="text-align: center;float:left;width:50%;">
 					<div class="meteo-content" style="padding-top: 15px;">
 						<img src="https://www.prevision-meteo.ch/style/images/icon/#fcst_day_0_CONDITION_KEY#-big.png" width="100" height0"100"/> 
 					</div>
@@ -36,7 +32,7 @@
 					<div class="meteo-content " style="margin-bottom:10px;"><span><i class="icon meteo-orage"></i> #fcst_day_0_KINDEX# %</span><br /></div>			
 				</div>                
 			</div>
-			<div style="float:left;width:50%;">
+			<div style="float:left;width:50%;margin-top: -40px;">
 				<div class="meteo-content">
 					<br />
 					<table>
@@ -66,20 +62,18 @@
 				</div>
 			</div>			
 		</div>
-		<div class="row">
-			<center>
-				<div class="mpv_graph_#id#" id="mpv_container_#id#" style="height: 210px; max-width:#width#;display:none">
-				</div>
-				<div class="row mpv_graph_#id#" style="position:absolute;top:25px;left:150px;display:none">
-					<button type="button" class="day_choose btn btn-primary" data-count="0">#fcst_day_0_day_long#</button>
-					<button type="button" class="day_choose btn btn-primary" data-count="1">#fcst_day_1_day_long#</button>
-					<button type="button" class="day_choose btn btn-primary" data-count="2">#fcst_day_2_day_long#</button>
-					<button type="button" class="day_choose btn btn-primary" data-count="3">#fcst_day_3_day_long#</button>
-					<button type="button" class="day_choose btn btn-primary" data-count="4">#fcst_day_4_day_long#</button>
-				</div>			
-			</center>
+		<div class="row" id="mpv_graph_#id#" style="position: relative;">
+			<div class="mpv_graph_#id#" id="mpv_container_#id#" style="padding-left: 15px;height: 210px; max-width:#width#;display:none;">
+			</div>
+			<div class="row mpv_graph_#id#" id="menubutton_#id#">
+				<button type="button" class="day_choose btn btn-primary" data-count="0">#fcst_day_0_day_long#</button>
+				<button type="button" class="day_choose btn btn-primary" data-count="1">#fcst_day_1_day_long#</button>
+				<button type="button" class="day_choose btn btn-primary" data-count="2">#fcst_day_2_day_long#</button>
+				<button type="button" class="day_choose btn btn-primary" data-count="3">#fcst_day_3_day_long#</button>
+				<button type="button" class="day_choose btn btn-primary" data-count="4">#fcst_day_4_day_long#</button>
+			</div>			
 		</div>		
-	</center>
+	</div>
 	<script>
 		if ('#refresh_id#' != '') {
 			$('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
@@ -97,14 +91,33 @@
 		});			 
 		meteoprevGraph('#station#', 0, 'mpv_container_#id#', 200);
 	</script>
+	<style>
+		div[data-eqtype="meteoprev"] .meteo-content th , .meteo-content td {
+			padding:5px;
+			text-align:center;
+		}
+		div[data-eqtype="meteoprev"] #show_graph_#id# {
+			position:absolute;
+			left:5px;
+			margin-top: 2px !important;	
+			z-index: 999;
+		}
+		div[data-eqtype="meteoprev"].hideEqLogicName #menubutton_#id#  {
+			position:absolute;
+			top:-10px;
+			left:25%;
+			display:none;
+		}		
+		div[data-eqtype="meteoprev"]:not(.hideEqLogicName) #menubutton_#id#  {
+			position:absolute;
+			top: -1px;
+			left:25%;
+			display:none;
+		}
+	</style>	
 </div>
 
-<style>
-	.meteo-content th , .meteo-content td {
-		padding:5px;
-		text-align:center;
-	}
-</style>
+
 
 
 

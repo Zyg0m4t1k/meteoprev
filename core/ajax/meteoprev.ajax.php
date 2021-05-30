@@ -24,6 +24,11 @@ try {
     ajax::init();
 
 	switch (init('action')) {
+//		case 'getDatas':
+//			$eqlogic = meteoprev::byId(init('id'));
+//			$file =  dirname(__FILE__) . '/../../data/' . $eqlogic->getConfiguration('station') .'_days.json';
+//			ajax::success(@file_get_contents($file));
+//			break;
 		case 'getForecastHtml':
 			$id = init('id');
 			$eq = eqLogic::byId($id);

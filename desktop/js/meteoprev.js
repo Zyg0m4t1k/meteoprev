@@ -35,18 +35,20 @@ $('#bt_cronGenerator').on('click',function(){
     });
 });
 
-$("body").undelegate(".checkbox-widget", 'change ').delegate('.checkbox-widget', 'change ', function () {
+
+$(".checkbox-widget").on('click ', function () {
 	( $(this).attr('data-l2key') == 'widgetCustom' && $(this).value() == 1 ) ? $('#custom').show() : $('#custom').hide();
 	$('.checkbox-widget').not(this).each(function(){
 		$( this ).prop("checked", false);
 	});
 });
 
-//function printEqLogic(_eqLogic) {
-//	if (isset(_eqLogic.configuration)) {
-//		_eqLogic.configuration.widgetCustom == 1 ? $('#custom').show() : $('#custom').hide();
-//	}
-//}
+function printEqLogic(_eqLogic) {
+	if (isset(_eqLogic.configuration)) {
+		_eqLogic.configuration.widgetCustom == 1 ? $('#custom').show() : $('#custom').hide();	
+	}	
+}
+
 
 function addCmdToTable(_cmd) {
     if (!isset(_cmd)) {

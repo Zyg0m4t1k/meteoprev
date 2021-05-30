@@ -130,6 +130,7 @@ prv_Meteogram.prototype.getChartOptions = function () {
 	return {
 		chart: {
 			renderTo: this.container,
+			backgroundColor: 'rgba(0,0,0,0)'
 		},
 		title: {
 			text: null,
