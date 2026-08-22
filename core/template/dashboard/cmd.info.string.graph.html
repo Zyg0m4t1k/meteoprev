@@ -13,43 +13,50 @@
 	</center>	
 	<script>
 		jeedom.cmd.update['#id#'] = function(_options) {
-			let cmd = $('.cmd[data-cmd_id=#id#]'),
-				el= $('.cmd[data-eqLogic_id=#eqLogic_id#] #mpv_graph_#id#'),
-				id_days = $('.cmd[data-eqLogic_id=#eqLogic_id#] #days_#id#'),
-				id = cmd.attr('data-eqLogic_id');
-			$.ajax({
+			var cmd = document.querySelector('.cmd[data-cmd_id="#id#"]');
+			var el = document.querySelector('.cmd[data-eqLogic_id="#eqLogic_id#"] #mpv_graph_#id#');
+			var idDays = document.querySelector('.cmd[data-eqLogic_id="#eqLogic_id#"] #days_#id#');
+			if (!cmd || !el) return;
+			var id = cmd.dataset.eqlogic_id;
+			domUtils.ajax({
 				type: 'POST',
 				url: 'plugins/meteoprev/core/ajax/meteoprev.ajax.php',
-				global:false,
-				async:false,
 				data: {
 					action: 'getStation',
 					id: id
 				},
 				dataType: 'json',
-				error: function (request, status, error) {
+				global: false,
+				error: function(request, status, error) {
 					handleAjaxError(request, status, error);
 				},
-				success: function (data) {
+				success: function(data) {
 					if (data.state != 'ok') {
-						el.showAlert({message: data.result, level: 'danger'});
+						jeedomUtils.showAlert({message: data.result, level: 'danger'});
 						return;
 					}
 					if (data.result.state == 'ok') {
-						id_days.empty().append(data.result.html);						
-						$('.cmd[data-cmd_uid=#uid#] .day_choose').on('click', function () {
-							meteoprevGraph(data.result.station, $(this).attr('data-count'), 'mpv_container_#id#', 195);
-						});
-						let _station = data.result.station,
-							_container = 'mpv_container_#id#';
-						meteoprevGraph(_station, 0, _container, 195);
+						if (idDays) {
+							idDays.innerHTML = '';
+							idDays.html(data.result.html);
+						}
+						var cmdWidget = document.querySelector('.cmd[data-cmd_uid="#uid#"]');
+						if (cmdWidget) {
+							cmdWidget.addEventListener('click', function(event) {
+								var target = event.target.closest('.day_choose');
+								if (target) {
+									meteoprevGraph(id, target.dataset.count, 'mpv_container_#id#', 195);
+								}
+							});
+						}
+						meteoprevGraph(id, 0, 'mpv_container_#id#', 195);
 					} else {
-						el.empty().append('Une erreur est survenue dans la récupération des informations');
+						el.innerHTML = 'Une erreur est survenue dans la récupération des informations';
 					}
 				}
-		   });			
+			});
 		}
-		jeedom.cmd.update['#id#']({display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#'})
+		jeedom.cmd.update['#id#']({display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#'});
 	</script>
 	<style>
 		.cmd[data-cmd_uid="#uid#"] #mpv_days_#id# {

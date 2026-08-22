@@ -1,13 +1,16 @@
 // http://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/highcharts/demo/combo-meteogram/
 
 var hour = new Date().getHours() + '' +   new Date().getDay() ,
- 	wHeight = $(window).height(),
+ 	wHeight = window.innerHeight,
 	dHeight = wHeight * 0.7;
 var dateutc = new Date();
 console.log(dateutc.getUTCDate())
-$.getJSON('/plugins/meteoprev/data/' + filename + '_days.json', function(json) {
-	window.meteogram = new Meteogram(json, 'container');
-});
+fetch('/plugins/meteoprev/data/' + filename + '_days.json')
+	.then(function(response) { return response.json() })
+	.then(function(json) {
+		window.meteogram = new Meteogram(json, 'container');
+	})
+	.catch(function(error) { console.error('Meteogram data load error:', error) });
 
 function Meteogram(json, container) {
     // Parallel arrays for the chart data, these are populated as the XML/JSON file
@@ -44,9 +47,9 @@ Meteogram.prototype.parseYrData = function () {
         json = this.json,
         pointStart;
 		
-    $.each(json, function (j, datas) {
-		
-		$.each(datas.data, function(i, value) {	
+    Object.values(json).forEach(function (datas) {
+
+		datas.data.forEach(function(value, i) {	
 			if ((new Date(value.timestamp*1000).getHours() + '' +   new Date(value.timestamp*1000).getDay() )  == hour) {
 				meteogram.time_stamp = value.timestamp*1000;
 				
@@ -146,6 +149,9 @@ Meteogram.prototype.getChartOptions = function () {
     var meteogram = this;
 
     return {
+        time: {
+            useUTC: false
+        },
         chart: {
             renderTo: this.container,
             marginBottom: 70,
@@ -435,9 +441,9 @@ Meteogram.prototype.windArrow = function (name) {
     ];
 
     //level = $.inArray(name, [0,1,2,3,4,5,6,7,8,9,10,11,12]);
-	level = $.inArray(name, ['Calme', 'Très légère brise', 'Légère brise', 'Petite brise', 'Jolie brise',
+	level = ['Calme', 'Très légère brise', 'Légère brise', 'Petite brise', 'Jolie brise',
         'Bonne brise', 'Vent frais', 'Grand frais', 'Coup de vent', 'Fort coup de vent', 'Tempête',
-        'Violente tempête', 'Ouragan']);
+        'Violente tempête', 'Ouragan'].indexOf(name);
 
     if (level === 0) {
         path = [];
@@ -473,7 +479,7 @@ Meteogram.prototype.windArrow = function (name) {
 Meteogram.prototype.drawWindArrows = function (chart) {
     var meteogram = this;
 
-    $.each(chart.series[0].data, function (i, point) {
+    chart.series[0].data.forEach(function (point, i) {
         var sprite, arrow, x, y;
 
         if (meteogram.resolution > 36e5 || i % 3 === 0) {
@@ -509,7 +515,7 @@ Meteogram.prototype.drawWindArrows = function (chart) {
 Meteogram.prototype.drawWeatherSymbols = function (chart) {
     var meteogram = this;
 
-    $.each(chart.series[0].data, function (i, point) {
+    chart.series[0].data.forEach(function (point, i) {
         if (i % 2 === 0) {
 
             chart.renderer
@@ -536,9 +542,6 @@ if(typeof Highcharts !== 'undefined'){
 			months: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
 			shortMonths: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juill.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
 			weekdays: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
-		},
-		global : {
-			useUTC : false
 		}			
 	});
 }	
@@ -553,7 +556,7 @@ Meteogram.prototype.tooltipFormatter = function (tooltip) {
     // Symbol text
 	
     // Add all series
-    Highcharts.each(tooltip.points, function (point) {
+    tooltip.points.forEach(function (point) {
         var series = point.series;
         ret += '<span style="color:' + series.color + '">\u25CF</span> ' + series.name +
             ':' + Highcharts.pick(point.point.value, point.y) +

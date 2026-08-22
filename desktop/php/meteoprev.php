@@ -38,6 +38,10 @@ $eqLogics = eqLogic::byType($plugin->getId());
 		</div>
 	</div>
 	<div class="col-xs-12 eqLogic" style="display: none;">
+		<div class="text-center" style="margin:5px 0 10px;opacity:0.75;">
+			{{Données météorologiques fournies par}}
+			<a href="https://www.prevision-meteo.ch" target="_blank" rel="noopener noreferrer">prevision-meteo.ch</a>
+		</div>
 		<div class="input-group pull-right" style="display:inline-flex">
 			<span class="input-group-btn">
 				<a class="btn btn-default eqLogicAction btn-sm roundedLeft" data-action="configure"><i class="fas fa-cogs"></i> {{Configuration avancée}}</a><a class="btn btn-sm btn-success eqLogicAction" data-action="save"><i class="fas fa-check-circle"></i> {{Sauvegarder}}</a><a class="btn btn-danger btn-sm eqLogicAction roundedRight" data-action="remove"><i class="fas fa-minus-circle"></i> {{Supprimer}}</a>
@@ -226,33 +230,43 @@ $eqLogics = eqLogic::byType($plugin->getId());
 				</form>
 			</div>
 			<div role="tabpanel" class="tab-pane" id="commandtab">
-				<a class="btn btn-success btn-sm cmdAction pull-right" data-action="add" style="margin-top:5px;"><i class="fas fa-plus-circle"></i> {{Commandes}}</a><br/><br/>
-				<table id="table_cmd" class="table table-bordered table-condensed">
-					<thead>
-						<tr>
-							<th>{{Nom}}</th>
-							<th>{{Type}}</th>
-							<th>{{Paramètres}}</th>
-							<th>{{Action}}</th>
-						</tr>
-					</thead>
-					<tbody>
-					</tbody>
-				</table>
+				<a class="btn btn-default btn-sm pull-right cmdAction" data-action="add" style="margin-top:5px;">
+					<i class="fas fa-plus-circle"></i> {{Ajouter une commande}}
+				</a>
+				<br/><br/>
+				<div class="table-responsive">
+					<table id="table_cmd" class="table table-bordered table-condensed">
+						<thead>
+							<tr>
+								<th class="hidden-xs" style="min-width:50px;width:70px;">{{Id}}</th>
+								<th style="min-width:200px;width:300px;">{{Nom}}</th>
+								<th style="width:130px;">{{Type}}</th>
+								<th style="min-width:200px;">{{Options}}</th>
+								<th style="min-width:80px;width:200px;">{{Etat}}</th>
+								<th style="min-width:80px;width:200px;">{{Action}}</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
 			</div>
 			<div role="tabpanel" class="tab-pane" id="commandwidget">
 				<br/>
-				<table id="table_cmdwidget" class="table table-bordered table-condensed">
-					<thead>
-						<tr>
-							<th>{{Nom}}</th>
-							<th>{{Type}}</th>
-							<th>{{Action}}</th>
-						</tr>
-					</thead>
-					<tbody>
-					</tbody>
-				</table>
+				<div class="table-responsive">
+					<table id="table_cmdwidget" class="table table-bordered table-condensed">
+						<thead>
+							<tr>
+								<th class="hidden-xs" style="min-width:50px;width:70px;">{{Id}}</th>
+								<th style="min-width:200px;width:300px;">{{Nom}}</th>
+								<th style="width:130px;">{{Type}}</th>
+								<th style="min-width:80px;width:200px;">{{Action}}</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 	</div>

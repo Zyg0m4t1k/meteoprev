@@ -22,13 +22,26 @@ try {
 
 
     ajax::init();
+	if (!isConnect()) {
+		throw new Exception(__('401 - Accès non autorisé', __FILE__), -1234);
+	}
 
 	switch (init('action')) {
-//		case 'getDatas':
-//			$eqlogic = meteoprev::byId(init('id'));
-//			$file =  dirname(__FILE__) . '/../../data/' . $eqlogic->getConfiguration('station') .'_days.json';
-//			ajax::success(@file_get_contents($file));
-//			break;
+		case 'getDatas':
+			$eqlogic = meteoprev::byId(init('id'));
+			if (!is_object($eqlogic)) {
+				throw new Exception(__('Équipement MeteoPrev introuvable', __FILE__));
+			}
+			$file = dirname(__FILE__) . '/../../data/' . $eqlogic->getConfiguration('station') . '_days.json';
+			if (!is_file($file)) {
+				throw new Exception(__('Données du graphique indisponibles', __FILE__));
+			}
+			$datas = json_decode(file_get_contents($file), true);
+			if (!is_array($datas)) {
+				throw new Exception(__('Données du graphique invalides', __FILE__));
+			}
+			ajax::success($datas);
+			break;
 		case 'getForecastHtml':
 			$id = init('id');
 			$eq = eqLogic::byId($id);

@@ -1,19 +1,26 @@
-<div class="eqLogic eqLogic-widget allowResize #eqType#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;min-height:225px;#style#;">
-	<script src="plugins/meteoprev/desktop/js/dashboard.js"></script>
-	<span class="statusCmd"></span>
-	<span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
-	<i class="fas fa-sync"></i>
-	</span>
-	<span class="cmd cmd-widget" data-cmd_id="#refresh_id#" style="display:none;"></span>	
-	<span id="show_graph_#id#" class="pull-left cursor"><i class="fas fa-chart-bar"></i></span>
-	<center class="widget-name"><a href="#eqLink#">#name_display# <span class="object_name">#object_name#</span></a></center>
+<div class="eqLogic eqLogic-widget text-center allowResize #eqType#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;min-height:225px;#style#;">
+	#dashboard_script#
+	<div class="widget-name">
+		<span style="color:#background-color#" title="#alert_name#">
+			<i class="#alert_icon#"></i>
+		</span>
+		<span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
+			<i class="fas fa-sync"></i>
+		</span>
+		<span class="panelLink pull-left cursor">
+			<a href="#panelLink#"><i class="fas fa-external-link-alt"></i></a>
+		</span>
+		<span id="show_graph_#id#" class="pull-left cursor"><i class="fas fa-chart-bar"></i></span>
+		<span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+		<a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+	</div>
 	<div class="verticalAlign">
 		<div id="mpv_forecast_#id#" class="row">
 			<br />
 			<div style="float:left;width:50%;margin-top: -40px;">
 				<div style="text-align: center;float:left;width:50%;">
 					<div class="meteo-content" style="padding-top: 15px;">
-						<img src="https://www.prevision-meteo.ch/style/images/icon/#fcst_day_0_CONDITION_KEY#-big.png" width="100" height0"100" />
+						<img src="plugins/meteoprev/data/icons/#fcst_day_0_CONDITION_KEY#-big.png" width="100" height="100" />
 					</div>
 					<div class="meteo-content">
 						<div class="meteo-content">
@@ -80,16 +87,16 @@
 							<th>#fcst_day_4_day_long#</th>
 						</tr>
 						<tr style="background-color: transparent !important">
-							<td><img src="#fcst_day_1_icon#" width="45" height="45"  /></td>
-							<td><img src="#fcst_day_2_icon#" width="45" height="45"  /></td>
-							<td><img src="#fcst_day_3_icon#" width="45" height="45"  /></td>
-							<td><img src="#fcst_day_4_icon#" width="45" height="45"  /></td>
+							<td><img src="plugins/meteoprev/data/icons/#fcst_day_1_condition_key#.png" width="45" height="45"  /></td>
+							<td><img src="plugins/meteoprev/data/icons/#fcst_day_2_condition_key#.png" width="45" height="45"  /></td>
+							<td><img src="plugins/meteoprev/data/icons/#fcst_day_3_condition_key#.png" width="45" height="45"  /></td>
+							<td><img src="plugins/meteoprev/data/icons/#fcst_day_4_condition_key#.png" width="45" height="45"  /></td>
 						</tr>
 						<tr style="background-color: transparent !important">
-							<td>#fcst_day_1_tmin# | #fcst_day_1_tmax#</td>
-							<td>#fcst_day_2_tmin# | #fcst_day_2_tmax#</td>
-							<td>#fcst_day_3_tmin# | #fcst_day_3_tmax#</td>
-							<td>#fcst_day_4_tmin# | #fcst_day_4_tmax#</td>
+							<td>#fcst_day_1_tmin#° | #fcst_day_1_tmax#°</td>
+							<td>#fcst_day_2_tmin#° | #fcst_day_2_tmax#°</td>
+							<td>#fcst_day_3_tmin#° | #fcst_day_3_tmax#°</td>
+							<td>#fcst_day_4_tmin#° | #fcst_day_4_tmax#°</td>
 						</tr>
 					</table>
 				</div>
@@ -120,22 +127,54 @@
 		</div>		
 	</div>
 	<script>
-		if ('#refresh_id#' != '') {
-			$('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
-				jeedom.cmd.execute({id: '#refresh_id#'})
-			})
-		} else {
-			$('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
-		}
-		$('.eqLogic[data-eqLogic_uid=#uid#] .day_choose_#id#').on('click', function () {
-			_count = $(this).attr('data-count');
-			meteoprevGraph('#station#', _count, 'mpv_container_#id#', 200);
-		});	
-		 
-		$('.eqLogic[data-eqLogic_uid=#uid#] #show_graph_#id#').click(function(){
-		   $("#mpv_forecast_#id#, .mpv_graph_#id#").slideToggle("slow");
-		});			 
-		meteoprevGraph('#station#', 0, 'mpv_container_#id#', 200);
+		(function() {
+			var widget = document.querySelector('.eqLogic[data-eqLogic_uid="#uid#"]');
+			if (!widget) return;
+			if ('#panelLink#' == '') {
+				var panelLink = widget.querySelector('.panelLink');
+				if (panelLink) panelLink.remove();
+			}
+			if ('#refresh_id#' != '') {
+				var refreshBtn = widget.querySelector('.refresh');
+				if (refreshBtn) {
+					refreshBtn.addEventListener('click', function() {
+						var refreshIcon = refreshBtn.querySelector('i');
+						if (refreshIcon) refreshIcon.classList.add('fa-spin');
+						jeedom.cmd.execute({
+							id: '#refresh_id#',
+							success: function() { if (refreshIcon) refreshIcon.classList.remove('fa-spin'); },
+							error: function() { if (refreshIcon) refreshIcon.classList.remove('fa-spin'); }
+						});
+					});
+				}
+			} else {
+				var refreshBtn = widget.querySelector('.refresh');
+				if (refreshBtn) refreshBtn.remove();
+			}
+			widget.addEventListener('click', function(event) {
+				var _target = null;
+				if (_target = event.target.closest('.day_choose_#id#')) {
+					meteoprevGraph('#id#', _target.dataset.count, 'mpv_container_#id#', 200);
+					return;
+				}
+				if (_target = event.target.closest('#show_graph_#id#')) {
+					var forecast = document.getElementById('mpv_forecast_#id#');
+					var graphs = widget.querySelectorAll('.mpv_graph_#id#');
+					var showGraph = widget.dataset.meteoprevGraphVisible !== '1';
+					widget.dataset.meteoprevGraphVisible = showGraph ? '1' : '0';
+					if (forecast) forecast.style.display = showGraph ? 'none' : '';
+					graphs.forEach(function(el) {
+						el.style.display = showGraph ? 'block' : 'none';
+					});
+					if (showGraph) {
+						requestAnimationFrame(function() {
+							meteoprevGraph('#id#', 0, 'mpv_container_#id#', 200);
+						});
+					}
+					return;
+				}
+			});
+		})();
 	</script>
 	<style>
 		div[data-eqtype="meteoprev"] .meteo-content th , .meteo-content td {
@@ -143,9 +182,7 @@
 			text-align:center;
 		}
 		div[data-eqtype="meteoprev"] #show_graph_#id# {
-			position:absolute;
-			left:5px;
-			margin-top: 2px !important;	
+			margin-left:5px;
 			z-index: 999;
 		}
 		div[data-eqtype="meteoprev"].hideEqLogicName #menubutton_#id#  {

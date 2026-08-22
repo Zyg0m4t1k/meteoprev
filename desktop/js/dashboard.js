@@ -1,10 +1,43 @@
 var hour = new Date().getHours() + '' +   new Date().getDay();
 
 
-function meteoprevGraph(_station, _count,_container, _height) {
-	//window.prv_meteogram = new prv_Meteogram(json, 'mpv_container');
-	$.getJSON('plugins/meteoprev/data/' + _station + '_days.json', function(json) {
-		window.prv_meteogram = new prv_Meteogram(json, _container , _count, _height);
+function meteoprevGraph(_eqLogicId, _count,_container, _height) {
+	var containerElement = document.getElementById(_container);
+	if (!containerElement) {
+		console.error('[meteoprev] Graph container not found:', _container);
+		return;
+	}
+	containerElement.textContent = 'Chargement du graphique…';
+	domUtils.ajax({
+		type: 'POST',
+		url: 'plugins/meteoprev/core/ajax/meteoprev.ajax.php',
+		dataType: 'json',
+		global: false,
+		data: {
+			action: 'getDatas',
+			id: _eqLogicId
+		},
+		success: function(response) {
+			if (response.state !== 'ok') {
+				containerElement.textContent = 'Graphique indisponible';
+				console.error('[meteoprev] Invalid AJAX response:', response.result);
+				return;
+			}
+			if (typeof Highcharts === 'undefined') {
+				containerElement.textContent = 'Graphique indisponible';
+				console.error('[meteoprev] Highcharts is not available');
+				return;
+			}
+			if (containerElement._meteoprevMeteogram && containerElement._meteoprevMeteogram.chart) {
+				containerElement._meteoprevMeteogram.chart.destroy();
+			}
+			containerElement.textContent = '';
+			containerElement._meteoprevMeteogram = new prv_Meteogram(response.result, containerElement, _count, _height);
+		},
+		error: function(request, status, error) {
+			containerElement.textContent = 'Graphique indisponible';
+			console.error('[meteoprev] Failed to load weather data:', status, error);
+		}
 	});
 }
 
@@ -48,24 +81,23 @@ function prv_Meteogram(json, container , _count , _height) {
 prv_Meteogram.prototype.parseYrData = function () {
 	var prv_meteogram = this,
 		json = this.json,
-		_count = this.count,
-		pointStart;
-	$.each(json, function (j, datas) {
-		$.each(datas.data, function(i, value) {	
+		_count = parseInt(this.count, 10) || 0,
+		dayData = json['fcst_day_' + _count];
+
+	if (!dayData || !Array.isArray(dayData.data)) {
+		console.error('[meteoprev] No graph data for day ' + _count);
+		return;
+	}
+
+	dayData.data.forEach(function(value, i) {
 			if ((new Date(value.timestamp*1000).getHours() + '' +   new Date(value.timestamp*1000).getDay() )  == hour) {
 				prv_meteogram.time_stamp = value.timestamp*1000;
 			}	
-			var from, to;
-			if (prevCheckTimestamp(value.timestamp*1000, _count) === false) {
-				return;
-			}			
-			from = value.timestamp*1000;
-			to = value.timestamp*1000 +  4 * 36e5;
-			if (to > pointStart + 4 * 24 * 36e5) {
-				return;
-			}
+			var from = value.timestamp * 1000;
 			if (i === 0) {
-				prv_meteogram.resolution = to - from;
+				prv_meteogram.resolution = dayData.data.length > 1
+					? (dayData.data[1].timestamp - value.timestamp) * 1000
+					: 36e5;
 			}					
 			prv_meteogram.temperatures.push({
 				//x: value.timestamp*1000,
@@ -91,18 +123,21 @@ prv_Meteogram.prototype.parseYrData = function () {
 				value: parseFloat(value.value.WNDSPD10m),
 				direction: parseFloat(value.value.WNDDIR10m)
 			});
-			 prv_meteogram.icon.push(value.value.ICON);
+			// Les anciens caches peuvent encore contenir une URL distante. Utiliser
+			// systématiquement l'icône locale afin de ne pas bloquer le dashboard.
+			var iconKey = value.value.CONDITION_KEY;
+			if (iconKey) {
+				prv_meteogram.icon.push('plugins/meteoprev/data/icons/' + iconKey + '.png');
+			} else {
+				prv_meteogram.icon.push(value.value.ICON);
+			}
 			 prv_meteogram.windDirections.push(value.value.WNDDIR10m);
 			 prv_meteogram.windDirectionNames.push(value.value.WNDDIRCARD10);
 			 prv_meteogram.windSpeeds.push(value.value.WNDSPD10m);
 			 prv_meteogram.windSpeedNames.push(value.value.windname);
 			 prv_meteogram.conditions.push(value.value.CONDITION);
-			if (i == 0) {
-				pointStart = (from + to) / 2;
-			}	
-		})
 	});
-   this.smoothLine(this.temperatures);
+	this.smoothLine(this.temperatures);
 	// Create the chart when the data is loaded
 	this.createChart();
 };
@@ -128,6 +163,9 @@ prv_Meteogram.prototype.createChart = function () {
 prv_Meteogram.prototype.getChartOptions = function () {
 	var prv_meteogram = this;
 	return {
+		time: {
+			useUTC: false
+		},
 		chart: {
 			renderTo: this.container,
 			backgroundColor: 'rgba(0,0,0,0)'
@@ -346,9 +384,9 @@ prv_Meteogram.prototype.windArrow = function (name) {
 		0, -10 // top
 	];
 	//level = $.inArray(name, [0,1,2,3,4,5,6,7,8,9,10,11,12]);
-	level = $.inArray(name, ['Calme', 'Très légère brise', 'Légère brise', 'Petite brise', 'Jolie brise',
+	level = ['Calme', 'Très légère brise', 'Légère brise', 'Petite brise', 'Jolie brise',
 		'Bonne brise', 'Vent frais', 'Grand frais', 'Coup de vent', 'Fort coup de vent', 'Tempête',
-		'Violente tempête', 'Ouragan']);
+		'Violente tempête', 'Ouragan'].indexOf(name);
 
 	if (level === 0) {
 		path = [];
@@ -382,7 +420,7 @@ prv_Meteogram.prototype.windArrow = function (name) {
 
 prv_Meteogram.prototype.drawWindArrows = function (chart) {
 	var prv_meteogram = this;
-	$.each(chart.series[0].data, function (i, point) {
+	chart.series[0].data.forEach(function (point, i) {
 		var sprite, arrow, x, y;
 		if (prv_meteogram.resolution > 36e5 || i % 3 === 0) {
 			// Draw the wind arrows
@@ -413,7 +451,7 @@ prv_Meteogram.prototype.drawWindArrows = function (chart) {
 
 prv_Meteogram.prototype.drawWeatherSymbols = function (chart) {
 	var prv_meteogram = this;
-	$.each(chart.series[0].data, function (i, point) {
+	chart.series[0].data.forEach(function (point, i) {
 		if (i % 2 === 0) {
 			chart.renderer
 				.image(
@@ -431,19 +469,6 @@ prv_Meteogram.prototype.drawWeatherSymbols = function (chart) {
 	});
 };
 
-if(typeof Highcharts !== 'undefined'){
-	Highcharts.setOptions({
-		lang: {
-			months: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
-			shortMonths: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juill.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
-			weekdays: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
-		},
-		global : {
-			useUTC : false
-		}			
-	});
-}	
-
 prv_Meteogram.prototype.tooltipFormatter = function (tooltip) {
 	// Create the header with reference to the time interval
 	var index = tooltip.points[0].point.index,
@@ -451,7 +476,7 @@ prv_Meteogram.prototype.tooltipFormatter = function (tooltip) {
 		ret = '<small>' + Highcharts.dateFormat('%A %e %b %H:%M', tooltip.x) + ' </small><br>';
 		ret += '<b>' + this.conditions[index] + ' </b><br>';
 	// Add all series
-	Highcharts.each(tooltip.points, function (point) {
+	tooltip.points.forEach(function (point) {
 		var series = point.series;
 		ret += '<span style="color:' + series.color + '">\u25CF</span> ' + series.name +
 			':' + Highcharts.pick(point.point.value, point.y) +

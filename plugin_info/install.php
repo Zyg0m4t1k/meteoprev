@@ -23,13 +23,17 @@ function meteoprev_install() {
 }
 
 function meteoprev_update() {
-	$eqLogics = eqLogic::byType('meteoprev', true);
-	foreach ($eqLogics as $eqlogic) {
-		$file = dirname(__FILE__) . '/../data/' . $eqlogic->getConfiguration('station') .'.json';
-		if (file_exists($file)) {
-			com_shell::execute(system::getCmdSudo() . ' rm ' . $file);
+	foreach (eqLogic::byType('meteoprev', true) as $eqlogic) {
+		try {
+			$station = basename($eqlogic->getConfiguration('station'));
+			$file = __DIR__ . '/../data/' . $station . '.json';
+			if (is_file($file) && !unlink($file)) {
+				log::add('meteoprev', 'warning', 'Impossible de supprimer le fichier météo : ' . $file);
+			}
+			$eqlogic->save();
+		} catch (Exception $e) {
+			log::add('meteoprev', 'error', 'Erreur mise à jour ' . $eqlogic->getHumanName() . ' : ' . $e->getMessage());
 		}
-		$eqlogic->save();
 	}
 }
 
