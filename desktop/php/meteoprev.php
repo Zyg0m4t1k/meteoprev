@@ -117,22 +117,22 @@ $eqLogics = eqLogic::byType($plugin->getId());
 							</div>
 						</div>
 						<div class="form-group">
-							<label class="col-md-3 control-label">{{ Pas de widget }}</label>
+							<label class="col-md-3 control-label">{{ Widget Jeedom par défaut }}</label>
 							<div class="col-md-1">
-								</span><input type="checkbox" class="eqLogicAttr checkbox-inline checkbox-widget" data-l1key="configuration" data-l2key="defaultWidget"/>
+								<input type="checkbox" class="eqLogicAttr checkbox-inline checkbox-widget" data-l1key="configuration" data-l2key="defaultWidget"/>
 							</div>
-							<label class="control-label">{{ Pas de widgets . Ajout des commandes selon afichage}}</label>
+							<label class="control-label">{{Affiche les commandes avec leur widget Jeedom configuré.}}</label>
 						</div>						
 						<div class="form-group">
 							<label class="col-md-3 control-label">{{ Widget basique }}</label>
 							<div class="col-md-1">
-								</span><input type="checkbox" class="eqLogicAttr checkbox-inline checkbox-widget" data-l1key="configuration" data-l2key="widget"/>
+								<input type="checkbox" class="eqLogicAttr checkbox-inline checkbox-widget" data-l1key="configuration" data-l2key="widget"/>
 							</div>
 						</div>						
 						<div class="form-group">
 							<label class="col-md-3 control-label">{{ Widget personnalisé }}</label>
 							<div class="col-md-1">
-								</span><input type="checkbox" class="eqLogicAttr checkbox-inline checkbox-widget" data-l1key="configuration" data-l2key="widgetCustom"/>
+								<input type="checkbox" class="eqLogicAttr checkbox-inline checkbox-widget" data-l1key="configuration" data-l2key="widgetCustom"/>
 							</div>
 							<label class="control-label">{{Pour avoir un widget avec certaines commandes personnalisées.}}</label>
 						</div>

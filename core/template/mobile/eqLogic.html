@@ -69,11 +69,11 @@
 		<div>
 			<div class="mpv_graph_#id#" style="position:absolute;top:25px;display:none">
 				<div style="position: absolute;left:165px;z-index: 1">
-					<btn class="day_choose_#id# cursor" data-count="0">#fcst_day_0_day_short#</btn>
-					<btn class="day_choose_#id# cursor" data-count="1">#fcst_day_1_day_short#</btn>
-					<btn class="day_choose_#id# cursor" data-count="2">#fcst_day_2_day_short#</btn>
-					<btn class="day_choose_#id# cursor" data-count="3">#fcst_day_3_day_short#</btn>
-					<btn class="day_choose_#id# cursor" data-count="4">#fcst_day_4_day_short#</btn>
+					<button type="button" class="day_choose_#id# cursor" data-count="0">#fcst_day_0_day_short#</button>
+					<button type="button" class="day_choose_#id# cursor" data-count="1">#fcst_day_1_day_short#</button>
+					<button type="button" class="day_choose_#id# cursor" data-count="2">#fcst_day_2_day_short#</button>
+					<button type="button" class="day_choose_#id# cursor" data-count="3">#fcst_day_3_day_short#</button>
+					<button type="button" class="day_choose_#id# cursor" data-count="4">#fcst_day_4_day_short#</button>
 				</div>
 				<div class="mpv_graph_#id#" id="mpv_container_#id#" style="width:510px ;height: 200px;display:none">
 				</div>				
@@ -129,7 +129,8 @@
 </div>
 
 <style>
-	.meteo-content th , .meteo-content td {
+	div[data-eqtype="meteoprev"] .meteo-content th,
+	div[data-eqtype="meteoprev"] .meteo-content td {
 		padding:5px;
 		text-align:center;
 	}

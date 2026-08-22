@@ -28,7 +28,9 @@ function meteoprev_update() {
 			$station = basename($eqlogic->getConfiguration('station'));
 			$file = __DIR__ . '/../data/' . $station . '.json';
 			if (is_file($file) && !unlink($file)) {
-				log::add('meteoprev', 'warning', 'Impossible de supprimer le fichier météo : ' . $file);
+				$warning = 'Impossible de supprimer le fichier météo : ' . $file;
+				log::add('meteoprev', 'warning', $warning);
+				message::add('meteoprev', $warning, 'update', 'cache-delete-' . $eqlogic->getId());
 			}
 			$eqlogic->save();
 		} catch (Exception $e) {

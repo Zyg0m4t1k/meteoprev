@@ -28,8 +28,7 @@
 						return;
 					}
 					if (data.result.state == 'ok') {
-						el.innerHTML = '';
-						el.html(data.result.html);
+						el.innerHTML = data.result.html;
 					} else {
 						el.innerHTML = 'Une erreur est survenue dans la récupération des informations';
 					}

@@ -18,12 +18,12 @@
 
 
 if (init('id') == '') {
-    throw new Exception('{{L\'id de l\'opération ne peut etre vide : }}' . init('op_id'));
+    throw new Exception('{{L\'id de l\'équipement ne peut être vide}}');
 }
 
-$eqLogic = eqLogic::byId(init('id'));
-if (!is_object($eqLogic)) { 
- throw new Exception('{{Aucun équipement associé à l\'id : }}' . init(init('id')));
+$eqLogic = meteoprev::byId((int)init('id'));
+if (!is_object($eqLogic) || !$eqLogic->hasRight('r')) {
+ throw new Exception('{{Aucun équipement MeteoPrev accessible pour l\'id : }}' . (int)init('id'));
  }
  
 $filename =  $eqLogic->getConfiguration('station');
@@ -35,4 +35,3 @@ sendVarToJS('name',  $eqLogic->getName());
 ?>
 <div id="container"></div>
 <?php include_file('desktop', 'modal', 'js', 'meteoprev');?>
-

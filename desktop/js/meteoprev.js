@@ -25,7 +25,7 @@ document.getElementById('div_pageContainer').addEventListener('click', function(
 	var _target = null;
 	if (_target = event.target.closest('.listCmdInfo')) {
 		var el = document.querySelector('.' + _target.dataset.input + ' input');
-		if (el) el.innerHTML = '';
+		if (el) el.value = '';
 		jeedom.cmd.getSelectModal({cmd: {type: 'info'}}, function(result) {
 			if (el) el.jeeValue(result.human);
 		});

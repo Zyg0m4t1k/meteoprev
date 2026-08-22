@@ -1,4 +1,7 @@
-var hour = new Date().getHours() + '' +   new Date().getDay();
+(function(window) {
+'use strict';
+
+var hour = new Date().getHours() + '' + new Date().getDay();
 
 
 function meteoprevGraph(_eqLogicId, _count,_container, _height) {
@@ -39,16 +42,6 @@ function meteoprevGraph(_eqLogicId, _count,_container, _height) {
 			console.error('[meteoprev] Failed to load weather data:', status, error);
 		}
 	});
-}
-
-function prevCheckTimestamp(_time , _count, _height) {
-	var ts = _time
-	var day = Math.floor(new Date().setHours(0, 0, 0, 0) + _count * 24 * 3600 * 1000  );
-	var checkDay = new Date(ts).setHours(0, 0, 0, 0);
-	if(day === checkDay){
-		return true;
-	}
-	return false;
 }
 
 function prv_Meteogram(json, container , _count , _height) {
@@ -177,12 +170,7 @@ prv_Meteogram.prototype.getChartOptions = function () {
 			enabled: false
 		},		
 		credits: {
-			//enabled: false
-            text: '<a href="https://www.prevision-meteo.ch">prevision-meteo.ch</a>',
-			align: 'right',
-            position: {
-                y: - 250
-            }
+			enabled: false
 		},
 		tooltip: {
 			shared: true,
@@ -383,7 +371,6 @@ prv_Meteogram.prototype.windArrow = function (name) {
 		0, 7,
 		0, -10 // top
 	];
-	//level = $.inArray(name, [0,1,2,3,4,5,6,7,8,9,10,11,12]);
 	level = ['Calme', 'Très légère brise', 'Légère brise', 'Petite brise', 'Jolie brise',
 		'Bonne brise', 'Vent frais', 'Grand frais', 'Coup de vent', 'Fort coup de vent', 'Tempête',
 		'Violente tempête', 'Ouragan'].indexOf(name);
@@ -488,3 +475,6 @@ prv_Meteogram.prototype.tooltipFormatter = function (tooltip) {
 		Highcharts.numberFormat(this.windSpeeds[index], 1) + ' km/h)';
 	return ret;
 };
+
+window.meteoprevGraph = meteoprevGraph;
+})(window);

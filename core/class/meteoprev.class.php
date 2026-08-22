@@ -22,6 +22,79 @@ require_once __DIR__ . '/../../../../core/php/core.inc.php';
 class meteoprev extends eqLogic {
 	/*     * *************************Attributs****************************** */
 	public static $_widgetPossibility = array( 'custom' => true );
+	private const MIN_REFRESH_INTERVAL = 60;
+
+	public function getSafeStation() {
+		$station = trim( (string)$this->getConfiguration( 'station' ) );
+		if ( $station === '' || !preg_match( '/^[A-Za-z0-9_-]+$/', $station ) ) {
+			throw new Exception( __( 'Nom de station invalide', __FILE__ ) );
+		}
+		return $station;
+	}
+
+	public function getCacheFile( $days = false ) {
+		return __DIR__ . '/../../data/' . $this->getSafeStation() . ( $days ? '_days' : '' ) . '.json';
+	}
+
+	public function loadCache( $days = false ) {
+		$file = $this->getCacheFile( $days );
+		if ( !is_file( $file ) || !is_readable( $file ) ) {
+			throw new Exception( __( 'Données météo indisponibles', __FILE__ ) );
+		}
+		$data = json_decode( file_get_contents( $file ), true );
+		if ( !is_array( $data ) ) {
+			throw new Exception( __( 'Données météo invalides', __FILE__ ) );
+		}
+		if ( !$days && !self::isValidWeatherData( $data ) ) {
+			throw new Exception( __( 'Cache météo incomplet', __FILE__ ) );
+		}
+		return $data;
+	}
+
+	private static function atomicWriteJson( $file, $data ) {
+		$json = json_encode( $data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+		if ( $json === false ) {
+			throw new Exception( __( 'Impossible d’encoder les données météo', __FILE__ ) );
+		}
+		$tmp = tempnam( dirname( $file ), basename( $file ) . '.' );
+		if ( $tmp === false ) {
+			throw new Exception( __( 'Impossible de créer le fichier temporaire', __FILE__ ) );
+		}
+		try {
+			if ( file_put_contents( $tmp, $json, LOCK_EX ) === false || !rename( $tmp, $file ) ) {
+				throw new Exception( __( 'Impossible d’écrire le cache météo', __FILE__ ) );
+			}
+		} finally {
+			if ( is_file( $tmp ) ) {
+				unlink( $tmp );
+			}
+		}
+	}
+
+	private static function fetchRemote( $url, $context ) {
+		$error = null;
+		set_error_handler( function( $severity, $message ) use ( &$error ) {
+			$error = $message;
+			return true;
+		} );
+		try {
+			$result = file_get_contents( $url, false, $context );
+		} finally {
+			restore_error_handler();
+		}
+		if ( $result === false && $error !== null ) {
+			log::add( 'meteoprev', 'warning', $error );
+		}
+		return $result;
+	}
+
+	private static function isValidWeatherData( $data ) {
+		return is_array( $data )
+			&& isset( $data[ 'city_info' ], $data[ 'current_condition' ], $data[ 'fcst_day_0' ] )
+			&& is_array( $data[ 'city_info' ] )
+			&& is_array( $data[ 'current_condition' ] )
+			&& is_array( $data[ 'fcst_day_0' ] );
+	}
 
 	public static function cron() {
 		foreach ( self::byType( 'meteoprev', true) as $station ) {
@@ -45,70 +118,50 @@ class meteoprev extends eqLogic {
 	}
 
 	public function setDataStation() {
-		$station = $this->getConfiguration( 'station' );
+		$station = $this->getSafeStation();
 		$path = __DIR__ . '/../../data';
-		$file = $path . '/' . $station . '.json';
+		$file = $this->getCacheFile();
 		$lockFile = $path . '/' . $station . '.lock';
-		$minInterval = 60;
-
-		// Verrou anti-spam : cooldown minimum entre deux actualisations
 		if ( !is_dir( $path ) ) {
-			log::add( 'meteoprev', 'debug', 'Creation du dossier data' );
-			mkdir( $path, 0775, true );
-		}
-		if ( file_exists( $lockFile ) ) {
-			$lastRun = (int)file_get_contents( $lockFile );
-			if ( ( time() - $lastRun ) < $minInterval ) {
-				log::add( 'meteoprev', 'debug', 'Cooldown actif (' . $minInterval . 's), actualisation ignorée' );
-				return;
+			if ( !mkdir( $path, 0775, true ) && !is_dir( $path ) ) {
+				throw new Exception( __( 'Impossible de créer le dossier de données', __FILE__ ) );
 			}
 		}
-		file_put_contents( $lockFile, time() );
-
-		// Appel API unique avec timeout
-		$ctx = stream_context_create( array( 'http' => array( 'timeout' => 10 ) ) );
-		$homepage = @file_get_contents( 'https://www.prevision-meteo.ch/services/json/' . $station, false, $ctx );
-		if ( $homepage === false ) {
-			log::add( 'meteoprev', 'error', 'Impossible de récupérer les données depuis prevision-meteo.ch pour ' . $station );
-			// Fallback : conserver les dernières données valides
-			if ( file_exists( $file ) ) {
-				log::add( 'meteoprev', 'warning', 'Utilisation des dernières données en cache pour ' . $station );
-				$this->updateCommand();
-			}
+		$lock = fopen( $lockFile, 'c+' );
+		if ( $lock === false ) {
+			throw new Exception( __( 'Impossible d’ouvrir le verrou météo', __FILE__ ) );
+		}
+		if ( !flock( $lock, LOCK_EX | LOCK_NB ) ) {
+			fclose( $lock );
 			return;
 		}
-		$datas = json_decode( $homepage, true );
-		if ( $datas === null ) {
-			log::add( 'meteoprev', 'error', 'Réponse JSON invalide depuis prevision-meteo.ch pour ' . $station );
-			if ( file_exists( $file ) ) {
-				log::add( 'meteoprev', 'warning', 'Utilisation des dernières données en cache pour ' . $station );
-				$this->updateCommand();
-			}
-			return;
-		}
-		$this->normalizeWeatherData( $datas );
-
-		// Cache des icônes localement
-		$this->cacheIcons( $datas );
-
-		// Comparaison avec le cache existant
-		if ( file_exists( $file ) ) {
-			$results = json_decode( file_get_contents( $file ), true );
-			if ( $datas === $results ) {
-				log::add( 'meteoprev', 'debug', 'Données identiques au cache, mise à jour des commandes uniquement' );
-				$this->addCommand( $datas );
-				$this->updateCommand();
+		try {
+			rewind( $lock );
+			$lastRun = (int)stream_get_contents( $lock );
+			if ( time() - $lastRun < self::MIN_REFRESH_INTERVAL ) {
 				return;
 			}
-		}
+			ftruncate( $lock, 0 );
+			rewind( $lock );
+			fwrite( $lock, (string)time() );
+			fflush( $lock );
 
-		// Sauvegarder les nouvelles données
-		file_put_contents( $file, json_encode( $datas ) );
-		log::add( 'meteoprev', 'debug', 'Données sauvegardées : ' . $file );
-
-		// Créer/mettre à jour les commandes à partir des données fraîches
-		$this->addCommand( $datas );
-		$this->updateCommand();
+			$ctx = stream_context_create( array( 'http' => array( 'timeout' => 10 ) ) );
+			$homepage = self::fetchRemote( 'https://www.prevision-meteo.ch/services/json/' . rawurlencode( $station ), $ctx );
+			$datas = $homepage === false ? null : json_decode( $homepage, true );
+			if ( !self::isValidWeatherData( $datas ) ) {
+				log::add( 'meteoprev', 'warning', 'API indisponible, utilisation du cache pour ' . $station );
+				$datas = $this->loadCache();
+			} else {
+				$this->normalizeWeatherData( $datas );
+				$this->cacheIcons( $datas );
+				$cached = is_file( $file ) ? json_decode( file_get_contents( $file ), true ) : null;
+				if ( $datas !== $cached ) {
+					self::atomicWriteJson( $file, $datas );
+				}
+			}
+			$this->addCommand( $datas );
+			$this->updateCommand( $datas );
 
 		// Construire le fichier _days.json pour les graphiques et prévisions
 		$arrays = array( 'fcst_day_0', 'fcst_day_1', 'fcst_day_2', 'fcst_day_3', 'fcst_day_4' );
@@ -120,6 +173,7 @@ class meteoprev extends eqLogic {
 				continue;
 			}
 			$dayData = $datas[ $array ];
+			$date = isset( $dayData[ 'date' ] ) ? $dayData[ 'date' ] : null;
 			$rain = 0;
 			foreach ( $dayData as $key => $value ) {
 				if ( $key == 'date' ) {
@@ -129,6 +183,9 @@ class meteoprev extends eqLogic {
 					$_infos[ $array ][ $key ] = $value;
 				} else {
 					$_datas = array();
+					if ( $date === null || !is_array( $value ) ) {
+						continue;
+					}
 					foreach ( $value as $keys => $values ) {
 						$dtime = DateTime::createFromFormat( "d.m.Y G:i", $date . ' ' . str_replace( 'H', ':', $keys ) );
 						if ( !is_object( $dtime ) ) {
@@ -156,9 +213,12 @@ class meteoprev extends eqLogic {
 			$this->checkAndUpdateCmd( 'rain_' . $i, $rain );
 			$i++;
 		}
-		$daysFile = $path . '/' . $station . '_days.json';
-		file_put_contents( $daysFile, json_encode( $_infos ) );
-		$this->refreshWidget();
+			self::atomicWriteJson( $this->getCacheFile( true ), $_infos );
+			$this->refreshWidget();
+		} finally {
+			flock( $lock, LOCK_UN );
+			fclose( $lock );
+		}
 	}
 
 	private function normalizeWeatherData( &$json ) {
@@ -211,17 +271,23 @@ class meteoprev extends eqLogic {
 				}
 			}
 		}
-		$keys = array_unique( $keys );
+		$keys = array_values( array_unique( array_filter( $keys, function( $key ) {
+			return is_string( $key ) && preg_match( '/^[A-Za-z0-9_-]+$/', $key );
+		} ) ) );
 
 		// Télécharger chaque icône manquante (petit + big)
-		$ctx = stream_context_create( array( 'http' => array( 'timeout' => 5 ) ) );
+		$ctx = stream_context_create( array( 'http' => array( 'timeout' => 3 ) ) );
 		foreach ( $keys as $key ) {
 			foreach ( array( $key . '.png', $key . '-big.png' ) as $filename ) {
 				$localPath = $iconDir . '/' . $filename;
 				if ( !file_exists( $localPath ) ) {
-					$iconData = @file_get_contents( $baseUrl . $filename, false, $ctx );
+					$iconData = self::fetchRemote( $baseUrl . rawurlencode( $filename ), $ctx );
 					if ( $iconData !== false ) {
-						file_put_contents( $localPath, $iconData );
+						$tmp = tempnam( $iconDir, 'icon.' );
+						if ( $tmp !== false ) {
+							file_put_contents( $tmp, $iconData, LOCK_EX );
+							rename( $tmp, $localPath );
+						}
 					}
 				}
 			}
@@ -254,9 +320,10 @@ class meteoprev extends eqLogic {
 	}
 
 	public static function launchRefresh( $_options ) {
-		log::add( 'meteoprev', 'debug', "launchRefresh(" . json_encode( $_options ) . ")" );
-		$meteoprev = eqLogic::byId( $_options[ 'id' ] );
-		$meteoprev->refreshWidget();
+		$meteoprev = isset( $_options[ 'id' ] ) ? self::byId( (int)$_options[ 'id' ] ) : null;
+		if ( is_object( $meteoprev ) ) {
+			$meteoprev->refreshWidget();
+		}
 	}
 
 	public static function windName( $vitesse ) {
@@ -306,11 +373,15 @@ class meteoprev extends eqLogic {
 		return array( $Bf, $windname );
 	}
 
-	public function updateCommand() {
+	public function updateCommand( $json = null ) {
 		$now = new DateTime();
 		$now = $now->format( 'H' );
-		$file = __DIR__ . '/../../data/' . $this->getConfiguration( 'station' ) . '.json';
-		$json = json_decode( file_get_contents( $file ), true );
+		if ( $json === null ) {
+			$json = $this->loadCache();
+		}
+		if ( !isset( $json[ 'city_info' ], $json[ 'current_condition' ] ) ) {
+			return;
+		}
 		$datas = $json[ 'city_info' ];
 		foreach ( $datas as $key => $value ) {
 			$this->checkAndUpdateCmd( 'city_info_' . $key, $value );
@@ -321,6 +392,9 @@ class meteoprev extends eqLogic {
 		}
 		$arrays = array( 'fcst_day_0', 'fcst_day_1', 'fcst_day_2', 'fcst_day_3', 'fcst_day_4' );
 		foreach ( $arrays as $array ) {
+			if ( !isset( $json[ $array ] ) || !is_array( $json[ $array ] ) ) {
+				continue;
+			}
 			$datas = $json[ $array ];
 			foreach ( $datas as $key => $value ) {
 				if ( $key != 'hourly_data' ) {
@@ -349,14 +423,14 @@ class meteoprev extends eqLogic {
 
 	public function addCommand( $json = null ) {
 		if ( $json === null ) {
-			$file = __DIR__ . '/../../data/' . $this->getConfiguration( 'station' ) . '.json';
-			if ( !file_exists( $file ) ) {
+			try {
+				$json = $this->loadCache();
+			} catch ( Exception $e ) {
 				return;
 			}
-			$json = json_decode( file_get_contents( $file ), true );
-			if ( $json === null ) {
-				return;
-			}
+		}
+		if ( !isset( $json[ 'city_info' ], $json[ 'current_condition' ] ) ) {
+			return;
 		}
 		$datas = $json[ 'city_info' ];
 		foreach ( $datas as $key => $value ) {
@@ -395,7 +469,7 @@ class meteoprev extends eqLogic {
 					$meteoprevCmd->setSubType( 'numeric' );
 					break;
 				case 'pressure':
-					$meteoprevCmd->setUnite( 'ppm ' );
+					$meteoprevCmd->setUnite( 'hPa' );
 					$meteoprevCmd->setSubType( 'numeric' );
 					break;
 				case 'humidity':
@@ -415,6 +489,9 @@ class meteoprev extends eqLogic {
 		}
 		$arrays = array( 'fcst_day_0', 'fcst_day_1', 'fcst_day_2', 'fcst_day_3', 'fcst_day_4' );
 		foreach ( $arrays as $array ) {
+			if ( !isset( $json[ $array ] ) || !is_array( $json[ $array ] ) ) {
+				continue;
+			}
 			$datas = $json[ $array ];
 			foreach ( $datas as $key => $value ) {
 				if ( $key != 'hourly_data' ) {
@@ -438,8 +515,11 @@ class meteoprev extends eqLogic {
 					}
 					$meteoprevCmd->save();
 				} else {
-					if ( $array == 'fcst_day_0' ) {
-						$datas = $json[ $array ][ 'hourly_data' ][ '0H00' ];
+					if ( $array == 'fcst_day_0' && is_array( $json[ $array ][ 'hourly_data' ] ) ) {
+						$datas = reset( $json[ $array ][ 'hourly_data' ] );
+						if ( !is_array( $datas ) ) {
+							continue;
+						}
 						foreach ( $datas as $keys => $values ) {
 							$meteoprevCmd = $this->getCmd( null, $array . '_' . $keys );
 							if ( !is_object( $meteoprevCmd ) ) {
@@ -504,7 +584,10 @@ class meteoprev extends eqLogic {
 
 	public function preSave() {
 		if ( $this->getConfiguration( 'refreshCron' ) == '' ) {
-			$this->setConfiguration( 'refreshCron', rand( 1, 9 ) . ' * * * *' );
+			$this->setConfiguration( 'refreshCron', '*/10 * * * *' );
+		}
+		if ( trim( (string)$this->getConfiguration( 'station' ) ) !== '' ) {
+			$this->getSafeStation();
 		}
 	}
 
@@ -578,7 +661,6 @@ class meteoprev extends eqLogic {
 				}
 			}
 			$listener->save();
-			$this->setDataStation();
 		} else {
 			if ( is_object( $listener ) ) {
 				$listener->remove();
@@ -595,25 +677,14 @@ class meteoprev extends eqLogic {
 	}
 
 	public function toHtml( $_version = 'dashboard' ) {
-		$renderStart = microtime( true );
 		$defaultWidget = (int)$this->getConfiguration( 'defaultWidget', 0 );
 		$customWidget = (int)$this->getConfiguration( 'widgetCustom', 0 );
-		$widgetType = $defaultWidget === 1 ? 'jeedom' : ( $customWidget === 1 ? 'custom' : 'basic' );
-		log::add( 'meteoprev', 'debug', 'toHtml start - équipement=' . $this->getHumanName()
-			. ', version=' . $_version . ', widget=' . $widgetType );
 		$replace = $this->preToHtml( $_version );
 		if ( !is_array( $replace ) ) {
-			log::add( 'meteoprev', 'debug', 'toHtml skipped - équipement=' . $this->getHumanName()
-				. ', retour preToHtml non générable' );
 			return $replace;
 		}
 		$version = jeedom::versionAlias( $_version );
 		$replace[ '#station#' ] = $this->getConfiguration( "station" );
-		if ( $defaultWidget === 1 ) {
-			log::add( 'meteoprev', 'debug', 'toHtml end - équipement=' . $this->getHumanName()
-				. ', widget=jeedom, durée=' . round( ( microtime( true ) - $renderStart ) * 1000, 1 ) . ' ms' );
-			return parent::toHtml( $_version );
-		}
 		// Le chargeur HTML de Jeedom attend l'événement onload des scripts src.
 		// Si cet événement n'arrive pas lors de l'injection dynamique du widget,
 		// DOMloading reste positif et le spinner ne disparaît jamais. Un script
@@ -626,10 +697,11 @@ class meteoprev extends eqLogic {
 		} else {
 			$replace[ '#dashboard_script#' ] = '';
 		}
+		if ( $defaultWidget === 1 ) {
+			return $replace[ '#dashboard_script#' ] . parent::toHtml( $_version );
+		}
 		if ( $customWidget === 0 ) {
 			$cmds = $this->getCmd();
-			log::add( 'meteoprev', 'debug', 'toHtml render - équipement=' . $this->getHumanName()
-				. ', widget=basic, commandes=' . count( $cmds ) );
 			$replace[ '#condition#' ] = "";
 			foreach ( $cmds as $cmd ) {
 				// Ne jamais exécuter une commande d'action pendant le rendu du
@@ -658,13 +730,9 @@ class meteoprev extends eqLogic {
 				}
 			}
 			$html = template_replace( $replace, getTemplate( 'core', $version, 'eqLogic', 'meteoprev' ) );
-			log::add( 'meteoprev', 'debug', 'toHtml end - équipement=' . $this->getHumanName()
-				. ', widget=basic, durée=' . round( ( microtime( true ) - $renderStart ) * 1000, 1 ) . ' ms' );
 			return $html;
 		} else {
 			$cmds = $this->getCmd();
-			log::add( 'meteoprev', 'debug', 'toHtml render - équipement=' . $this->getHumanName()
-				. ', widget=custom, commandes=' . count( $cmds ) );
 			foreach ( $cmds as $cmd ) {
 				if ( $cmd->getType() != 'info' ) {
 					continue;
@@ -673,40 +741,30 @@ class meteoprev extends eqLogic {
 			}
 			$infos = array( "temperature" => "fcst_day_0_TMP2m", "humidite" => "fcst_day_0_RH2m", "pression" => "fcst_day_0_PRMSL", "vent" => "fcst_day_0_WNDSPD10m", "pluieInst" => "fcst_day_0_APCPsfc", "pluieTot" => "rain_0" );
 			foreach ( $infos as $key => $value ) {
-				log::add( 'meteoprev', 'debug', 'key ' . $key . ' value ' . $value );
 				if ( $this->getConfiguration( $key ) != "" ) {
-					log::add( 'meteoprev', 'debug', 'custom ' );
 					$cmdId = str_replace( '#', '', $this->getConfiguration( $key ) );
 					$cmd = cmd::byId( $cmdId );
 					if ( is_object( $cmd ) ) {
-						log::add( 'meteoprev', 'debug', 'cmd ' . $value );
+						$cmdValue = $cmd->execCmd();
 						if ( $key == "vent" ) {
-							log::add( 'meteoprev', 'debug', 'vent ' . $cmd->execCmd() );
-
-							$return = meteoprev::windName( $cmd->execCmd() );
+							$return = meteoprev::windName( $cmdValue );
 							$replace[ '#nameWind#' ] = $return[ 1 ];
-
 						}
-						$replace[ '#' . $value . '#' ] = $cmd->execCmd();
+						$replace[ '#' . $value . '#' ] = $cmdValue;
 					}
 				} else {
-					log::add( 'meteoprev', 'debug', 'no custom ' );
 					$meteoprevCmd = $this->getCmd( null, $value );
 					if ( is_object( $meteoprevCmd ) ) {
+						$cmdValue = $meteoprevCmd->execCmd();
 						if ( $key == "vent" ) {
-							log::add( 'meteoprev', 'debug', 'vent ' . $meteoprevCmd->execCmd() );
-
-							$return = meteoprev::windName( $meteoprevCmd->execCmd() );
+							$return = meteoprev::windName( $cmdValue );
 							$replace[ '#nameWind#' ] = $return[ 1 ];
-
 						}
-						$replace[ '#' . $value . '#' ] = $meteoprevCmd->execCmd();
+						$replace[ '#' . $value . '#' ] = $cmdValue;
 					}
 				}
 			}
 			$html = template_replace( $replace, getTemplate( 'core', $version, 'custom', 'meteoprev' ) );
-			log::add( 'meteoprev', 'debug', 'toHtml end - équipement=' . $this->getHumanName()
-				. ', widget=custom, durée=' . round( ( microtime( true ) - $renderStart ) * 1000, 1 ) . ' ms' );
 			return $html;
 		}
 	}

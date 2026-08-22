@@ -1,10 +1,12 @@
-// http://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/highcharts/demo/combo-meteogram/
+(function() {
+'use strict';
+
+// Inspiré du meteogramme de démonstration Highcharts.
 
 var hour = new Date().getHours() + '' +   new Date().getDay() ,
  	wHeight = window.innerHeight,
 	dHeight = wHeight * 0.7;
 var dateutc = new Date();
-console.log(dateutc.getUTCDate())
 fetch('/plugins/meteoprev/data/' + filename + '_days.json')
 	.then(function(response) { return response.json() })
 	.then(function(json) {
@@ -440,7 +442,6 @@ Meteogram.prototype.windArrow = function (name) {
         0, -10 // top
     ];
 
-    //level = $.inArray(name, [0,1,2,3,4,5,6,7,8,9,10,11,12]);
 	level = ['Calme', 'Très légère brise', 'Légère brise', 'Petite brise', 'Jolie brise',
         'Bonne brise', 'Vent frais', 'Grand frais', 'Coup de vent', 'Fort coup de vent', 'Tempête',
         'Violente tempête', 'Ouragan'].indexOf(name);
@@ -572,7 +573,9 @@ Meteogram.prototype.tooltipFormatter = function (tooltip) {
 
 
 
-    return ret;
+	return ret;
 };
+
+})();
 	
 	

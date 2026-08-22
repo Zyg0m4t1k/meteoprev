@@ -1,5 +1,4 @@
 <div class="cmd cmd-widget" data-type="info" data-subtype="string" data-cmd_id="#id#" data-cmd_uid="#uid#" data-version="#version#" data-eqLogic_id="#eqLogic_id#" >
-	<script src="plugins/meteoprev/desktop/js/dashboard.js"></script>
 	<div class="title #hide_name#">
 		<div class="cmdName">#name_display#</div>
 	</div>
@@ -37,11 +36,11 @@
 					}
 					if (data.result.state == 'ok') {
 						if (idDays) {
-							idDays.innerHTML = '';
-							idDays.html(data.result.html);
+							idDays.innerHTML = data.result.html;
 						}
 						var cmdWidget = document.querySelector('.cmd[data-cmd_uid="#uid#"]');
-						if (cmdWidget) {
+						if (cmdWidget && cmdWidget.dataset.meteoprevDaysBound !== '1') {
+							cmdWidget.dataset.meteoprevDaysBound = '1';
 							cmdWidget.addEventListener('click', function(event) {
 								var target = event.target.closest('.day_choose');
 								if (target) {
